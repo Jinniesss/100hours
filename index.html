@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Hundred">
+<meta name="theme-color" content="#0D1117">
+<title>Hundred</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ── TOKENS ── */
+  :root {
+    --bg:        #0D1117;
+    --surface:   #161C26;
+    --surface2:  #1E2636;
+    --border:    #2A3347;
+    --gold:      #C9932A;
+    --gold-dim:  #7A5518;
+    --cream:     #E8DCC8;
+    --muted:     #6B7A94;
+    --danger:    #C0392B;
+    --green:     #2ECC71;
+    --serif:     'DM Serif Display', serif;
+    --mono:      'IBM Plex Mono', monospace;
+    --sans:      'Inter', sans-serif;
+    --r:         14px;
+    --r-sm:      8px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bot: env(safe-area-inset-bottom, 0px);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: var(--sans);
+    font-size: 15px;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  /* ── LAYOUT ── */
+  #app { max-width: 480px; margin: 0 auto; padding: 0 0 calc(80px + var(--safe-bot)); }
+
+  .header {
+    padding: calc(16px + var(--safe-top)) 20px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .header-title { font-family: var(--serif); font-size: 26px; letter-spacing: -0.3px; }
+  .header-title span { color: var(--gold); }
+
+  /* ── BOTTOM NAV ── */
+  .nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding-bottom: var(--safe-bot);
+    z-index: 100;
+  }
+  .nav-btn {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    gap: 3px; padding: 10px 0; background: none; border: none;
+    color: var(--muted); cursor: pointer; font-family: var(--sans);
+    font-size: 11px; transition: color 0.15s;
+  }
+  .nav-btn.active { color: var(--gold); }
+  .nav-btn svg { width: 22px; height: 22px; }
+
+  /* ── SCREENS ── */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ── SKILL CARD ── */
+  .skill-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 18px;
+    margin: 0 16px 14px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    position: relative;
+  }
+  .skill-card:active { border-color: var(--gold-dim); }
+  .skill-card-header { display: flex; align-items: center; gap: 14px; }
+
+  /* ── RING ── */
+  .ring-wrap { position: relative; flex-shrink: 0; width: 64px; height: 64px; }
+  .ring-wrap svg { width: 64px; height: 64px; transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: var(--border); stroke-width: 5; }
+  .ring-fill { fill: none; stroke: var(--gold); stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+  .ring-label {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    color: var(--cream); line-height: 1.2;
+  }
+  .ring-label .ring-pct { font-size: 13px; }
+
+  .skill-info { flex: 1; min-width: 0; }
+  .skill-name { font-family: var(--serif); font-size: 20px; line-height: 1.2; }
+  .skill-meta { color: var(--muted); font-size: 12px; margin-top: 4px; font-family: var(--mono); }
+  .skill-hours { font-family: var(--mono); font-size: 22px; font-weight: 500; color: var(--gold); margin-top: 6px; }
+  .skill-hours span { font-size: 13px; color: var(--muted); font-weight: 400; }
+
+  .skill-active-badge {
+    position: absolute; top: 14px; right: 14px;
+    background: var(--danger); color: #fff;
+    font-size: 10px; font-family: var(--mono);
+    padding: 2px 7px; border-radius: 20px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .pulse { width: 6px; height: 6px; background: #fff; border-radius: 50%; animation: pulse 1.2s ease infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── EMPTY STATE ── */
+  .empty {
+    text-align: center; padding: 60px 32px;
+    color: var(--muted);
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; }
+  .empty h3 { font-family: var(--serif); font-size: 22px; color: var(--cream); margin-bottom: 8px; }
+  .empty p { font-size: 14px; line-height: 1.6; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 20px; border-radius: var(--r-sm); border: none;
+    font-family: var(--sans); font-size: 15px; font-weight: 500;
+    cursor: pointer; transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--gold); color: #0D1117; }
+  .btn-secondary { background: var(--surface2); color: var(--cream); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-outline { background: none; border: 1px solid var(--border); color: var(--cream); }
+  .btn-full { width: 100%; }
+  .btn-sm { padding: 8px 14px; font-size: 13px; }
+
+  /* ── FAB ── */
+  .fab {
+    position: fixed; bottom: calc(72px + var(--safe-bot)); right: 20px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--gold); color: #0D1117;
+    border: none; font-size: 26px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 20px rgba(201,147,42,0.35);
+    transition: transform 0.15s;
+    z-index: 99;
+  }
+  .fab:active { transform: scale(0.93); }
+
+  /* ── MODAL / SHEET ── */
+  .overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); z-index: 200;
+    align-items: flex-end; justify-content: center;
+  }
+  .overlay.open { display: flex; }
+  .sheet {
+    background: var(--surface);
+    border-radius: 20px 20px 0 0;
+    padding: 20px 20px calc(20px + var(--safe-bot));
+    width: 100%; max-width: 480px;
+    max-height: 90dvh; overflow-y: auto;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp { from{transform:translateY(60px);opacity:0} to{transform:translateY(0);opacity:1} }
+  .sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 18px; }
+  .sheet-title { font-family: var(--serif); font-size: 22px; margin-bottom: 18px; }
+
+  /* ── FORM ── */
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .field input, .field textarea, .field select {
+    width: 100%; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: var(--r-sm);
+    color: var(--cream); font-family: var(--sans); font-size: 15px;
+    padding: 11px 14px; outline: none;
+    transition: border-color 0.15s;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--gold); }
+  .field textarea { resize: none; min-height: 80px; }
+  .field select option { background: var(--surface2); }
+
+  /* ── SKILL DETAIL ── */
+  .detail-header {
+    padding: calc(16px + var(--safe-top)) 20px 20px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .back-btn {
+    width: 36px; height: 36px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--cream); flex-shrink: 0;
+  }
+  .detail-hero {
+    padding: 0 20px 24px;
+    display: flex; align-items: center; gap: 20px;
+  }
+  .detail-ring-wrap { position: relative; width: 90px; height: 90px; }
+  .detail-ring-wrap svg { width: 90px; height: 90px; transform: rotate(-90deg); }
+  .detail-info { flex: 1; }
+  .detail-name { font-family: var(--serif); font-size: 28px; line-height: 1.1; }
+  .detail-hours { font-family: var(--mono); font-size: 32px; color: var(--gold); margin-top: 4px; }
+  .detail-hours span { font-size: 14px; color: var(--muted); }
+  .detail-goal { font-size: 12px; color: var(--muted); margin-top: 2px; font-family: var(--mono); }
+
+  /* ── TIMER ── */
+  .timer-section {
+    margin: 0 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 18px;
+    text-align: center;
+  }
+  .timer-display {
+    font-family: var(--mono); font-size: 44px; font-weight: 500;
+    color: var(--cream); letter-spacing: 2px; margin: 8px 0 16px;
+  }
+  .timer-display.running { color: var(--gold); }
+  .timer-btns { display: flex; gap: 10px; justify-content: center; }
+
+  /* ── SECTION HEADER ── */
+  .section-hd {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px 10px;
+  }
+  .section-hd h3 { font-family: var(--serif); font-size: 18px; }
+
+  /* ── SESSION LIST ── */
+  .session-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    padding: 13px 16px;
+    margin: 0 16px 8px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .session-item:active { border-color: var(--gold-dim); }
+  .session-row { display: flex; align-items: center; justify-content: space-between; }
+  .session-dur { font-family: var(--mono); font-size: 16px; font-weight: 500; }
+  .session-date { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+  .session-note { font-size: 13px; color: var(--muted); margin-top: 5px; line-height: 1.4; }
+  .session-milestone {
+    display: inline-block; margin-top: 6px;
+    background: rgba(201,147,42,0.15); color: var(--gold);
+    font-size: 11px; padding: 2px 8px; border-radius: 20px;
+    font-family: var(--mono);
+  }
+
+  /* ── MILESTONES ── */
+  .milestone-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 11px 16px; margin: 0 16px 8px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+  }
+  .milestone-check {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid var(--border); flex-shrink: 0; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .milestone-check.done { background: var(--gold); border-color: var(--gold); }
+  .milestone-check.done::after { content: '✓'; color: #0D1117; font-size: 11px; font-weight: bold; }
+  .milestone-text { flex: 1; font-size: 14px; line-height: 1.5; }
+  .milestone-text.done { color: var(--muted); text-decoration: line-through; }
+
+  /* ── RESOURCES ── */
+  .resource-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 16px; margin: 0 16px 8px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+  }
+  .resource-icon { font-size: 20px; flex-shrink: 0; }
+  .resource-info { flex: 1; min-width: 0; }
+  .resource-name { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .resource-type { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
+
+  /* ── LIBRARY GRID ── */
+  .library-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; padding: 0 16px;
+  }
+  .lib-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 16px 14px;
+    cursor: pointer; transition: border-color 0.15s;
+    text-align: center;
+  }
+  .lib-card:active { border-color: var(--gold); }
+  .lib-card.owned { border-color: var(--gold-dim); opacity: 0.5; pointer-events: none; }
+  .lib-icon { font-size: 32px; margin-bottom: 8px; }
+  .lib-name { font-family: var(--serif); font-size: 16px; }
+  .lib-desc { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+
+  /* ── TABS ── */
+  .tabs { display: flex; gap: 0; margin: 0 16px 16px; border-radius: var(--r-sm); overflow: hidden; border: 1px solid var(--border); }
+  .tab-btn {
+    flex: 1; padding: 9px; background: var(--surface2); border: none;
+    color: var(--muted); font-family: var(--sans); font-size: 13px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .tab-btn.active { background: var(--gold); color: #0D1117; font-weight: 500; }
+
+  /* ── STATS SCREEN ── */
+  .stats-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 18px; margin: 0 16px 14px;
+  }
+  .stats-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .stats-row:last-child { border-bottom: none; }
+  .stats-label { font-size: 13px; color: var(--muted); }
+  .stats-value { font-family: var(--mono); font-size: 16px; }
+
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: var(--border); margin: 16px 20px; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; top: calc(20px + var(--safe-top)); left: 50%; transform: translateX(-50%) translateY(-80px);
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--cream); padding: 10px 18px; border-radius: 20px;
+    font-size: 13px; z-index: 999; transition: transform 0.3s ease;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ── ARCHIVED TAG ── */
+  .archived-tag {
+    font-size: 10px; font-family: var(--mono);
+    background: var(--surface2); color: var(--muted);
+    padding: 2px 7px; border-radius: 20px;
+    display: inline-block; margin-left: 8px; vertical-align: middle;
+  }
+
+  .spacer { height: 12px; }
+  .pad-h { padding: 0 16px; }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ══ HOME SCREEN ══ -->
+  <div id="screen-home" class="screen active">
+    <div class="header">
+      <div class="header-title">hundred<span>.</span></div>
+      <button class="btn btn-sm btn-outline" onclick="showArchived()">archived</button>
+    </div>
+    <div id="skill-list"></div>
+    <div id="empty-home" class="empty" style="display:none">
+      <div class="empty-icon">✦</div>
+      <h3>No skills yet</h3>
+      <p>Add a skill from the library or create your own to start tracking your first hundred hours.</p>
+    </div>
+  </div>
+
+  <!-- ══ SKILL DETAIL SCREEN ══ -->
+  <div id="screen-detail" class="screen">
+    <div class="detail-header">
+      <div class="back-btn" onclick="goHome()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path d="M15 18l-6-6 6-6"/></svg>
+      </div>
+      <div style="flex:1"></div>
+      <button class="btn btn-sm btn-outline" id="detail-archive-btn" onclick="toggleArchiveSkill()">archive</button>
+      <button class="btn btn-sm btn-outline" style="margin-left:8px" onclick="openEditGoal()">goal</button>
+    </div>
+
+    <div class="detail-hero">
+      <div class="detail-ring-wrap">
+        <svg viewBox="0 0 90 90">
+          <circle class="ring-bg" cx="45" cy="45" r="38"/>
+          <circle id="detail-ring" class="ring-fill" cx="45" cy="45" r="38" stroke-dasharray="238.76" stroke-dashoffset="238.76"/>
+        </svg>
+        <div class="ring-label" id="detail-ring-label" style="font-size:13px"></div>
+      </div>
+      <div class="detail-info">
+        <div class="detail-name" id="detail-name"></div>
+        <div class="detail-hours"><span id="detail-hours-num">0</span><span> hrs</span></div>
+        <div class="detail-goal" id="detail-goal-txt"></div>
+      </div>
+    </div>
+
+    <!-- timer -->
+    <div class="timer-section">
+      <div style="font-size:12px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em">Session timer</div>
+      <div class="timer-display" id="timer-display">00:00:00</div>
+      <div class="timer-btns">
+        <button class="btn btn-primary" id="timer-start-btn" onclick="startTimer()">▶ Start</button>
+        <button class="btn btn-danger" id="timer-stop-btn" onclick="stopTimer()" style="display:none">■ Stop</button>
+        <button class="btn btn-secondary" onclick="openManualLog()">+ Manual</button>
+      </div>
+    </div>
+
+    <!-- tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('sessions', this)">Sessions</button>
+      <button class="tab-btn" onclick="switchTab('milestones', this)">Milestones</button>
+      <button class="tab-btn" onclick="switchTab('resources', this)">Resources</button>
+    </div>
+
+    <div id="tab-sessions">
+      <div class="section-hd"><h3>Sessions</h3></div>
+      <div id="sessions-list"></div>
+    </div>
+    <div id="tab-milestones" style="display:none">
+      <div class="section-hd">
+        <h3>Milestones</h3>
+        <button class="btn btn-sm btn-outline" onclick="openAddMilestone()">+ add</button>
+      </div>
+      <div id="milestones-list"></div>
+    </div>
+    <div id="tab-resources" style="display:none">
+      <div class="section-hd">
+        <h3>Resources</h3>
+        <button class="btn btn-sm btn-outline" onclick="openAddResource()">+ add</button>
+      </div>
+      <div id="resources-list"></div>
+    </div>
+  </div>
+
+  <!-- ══ LIBRARY SCREEN ══ -->
+  <div id="screen-library" class="screen">
+    <div class="header">
+      <div class="header-title">library<span>.</span></div>
+    </div>
+    <div class="library-grid" id="library-grid"></div>
+    <div class="spacer"></div>
+    <div class="pad-h">
+      <button class="btn btn-outline btn-full" onclick="openCustomSkill()">+ Create custom skill</button>
+    </div>
+  </div>
+
+  <!-- ══ STATS SCREEN ══ -->
+  <div id="screen-stats" class="screen">
+    <div class="header">
+      <div class="header-title">stats<span>.</span></div>
+    </div>
+    <div id="stats-content"></div>
+  </div>
+
+</div><!-- #app -->
+
+<!-- ══ BOTTOM NAV ══ -->
+<nav class="nav">
+  <button class="nav-btn active" id="nav-home" onclick="navTo('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+    Skills
+  </button>
+  <button class="nav-btn" id="nav-library" onclick="navTo('library')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Library
+  </button>
+  <button class="nav-btn" id="nav-stats" onclick="navTo('stats')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Stats
+  </button>
+</nav>
+
+<!-- ══ OVERLAYS ══ -->
+
+<!-- Add skill from library -->
+<div class="overlay" id="overlay-lib-add">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="lib-add-title">Add skill</div>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:18px" id="lib-add-desc"></p>
+    <div class="field"><label>Goal (hours)</label><input type="number" id="lib-goal-input" value="100" min="1"></div>
+    <button class="btn btn-primary btn-full" onclick="confirmAddFromLib()">Add to my skills</button>
+    <div style="height:10px"></div>
+    <button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-lib-add')">Cancel</button>
+  </div>
+</div>
+
+<!-- Custom skill -->
+<div class="overlay" id="overlay-custom">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Create skill</div>
+    <div class="field"><label>Name</label><input type="text" id="custom-name" placeholder="e.g. Origami"></div>
+    <div class="field"><label>Emoji</label><input type="text" id="custom-emoji" placeholder="✦" maxlength="2"></div>
+    <div class="field"><label>Goal (hours)</label><input type="number" id="custom-goal" value="100" min="1"></div>
+    <button class="btn btn-primary btn-full" onclick="confirmCustomSkill()">Create skill</button>
+    <div style="height:10px"></div>
+    <button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-custom')">Cancel</button>
+  </div>
+</div>
+
+<!-- Manual log -->
+<div class="overlay" id="overlay-manual">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Log a session</div>
+    <div class="field"><label>Duration (minutes)</label><input type="number" id="manual-dur" placeholder="e.g. 45" min="1"></div>
+    <div class="field"><label>Date (optional)</label><input type="date" id="manual-date"></div>
+    <div class="field"><label>Note (optional)</label><textarea id="manual-note" placeholder="What did you work on?"></textarea></div>
+    <div class="field"><label>Milestone reached? (optional)</label><input type="text" id="manual-milestone" placeholder="e.g. First clean waterfall cut"></div>
+    <button class="btn btn-primary btn-full" onclick="confirmManualLog()">Save session</button>
+    <div style="height:10px"></div>
+    <button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-manual')">Cancel</button>
+  </div>
+</div>
+
+<!-- Session detail -->
+<div class="overlay" id="overlay-session">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Session</div>
+    <div id="session-detail-content"></div>
+    <div class="field" style="margin-top:16px"><label>Add / edit note</label><textarea id="session-edit-note" placeholder="What did you accomplish?"></textarea></div>
+    <div class="field"><label>Milestone reached?</label><input type="text" id="session-edit-milestone" placeholder="e.g. Played first full song"></div>
+    <button class="btn btn-primary btn-full" onclick="saveSessionNote()">Save</button>
+    <div style="height:10px"></div>
+    <button class="btn btn-danger btn-full" onclick="deleteSession()">Delete session</button>
+    <div style="height:10px"></div>
+    <button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-session')">Cancel</button>
+  </div>
+</div>
+
+<!-- Add milestone -->
+<div class="overlay" id="overlay-milestone">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Add milestone</div>
+    <div class="field"><label>Milestone</label><input type="text" id="milestone-input" placeholder="e.g. Complete first chord progression"></div>
+    <button class="btn btn-primary btn-full" onclick="confirmAddMilestone()">Add</button>
+    <div style="height:10px"></div>
+    <button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-milestone')">Cancel</button>
+  </div>
+</div>
+
+<!-- Add resource -->
+<div class="overlay" id="overlay-resource">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Add resource</div>
+    <div class="field"><label>Name</label><input type="text" id="resource-name" placeholder="e.g. Justin Guitar - Beginner Course"></div>
+    <div class="field"><label>Type</label>
+      <select id="resource-type">
+        <option value="video">Video / YouTube</option>
+        <option value="book">Book</option>
+        <option value="website">Website</option>
+        <option value="course">Course</option>
+        <option value="community">Community</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="field"><label>URL (optional)</label><input type="url" id="resource-url" placeholder="https://..."></div>
+    <button class="btn btn-primary btn-full" onclick="confirmAddResource()">Add</button>
+    <div style="height:10px"></div>
+    <button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-resource')">Cancel</button>
+  </div>
+</div>
+
+<!-- Edit goal -->
+<div class="overlay" id="overlay-goal">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Edit goal</div>
+    <div class="field"><label>Goal (hours)</label><input type="number" id="goal-input" min="1"></div>
+    <button class="btn btn-primary btn-full" onclick="confirmEditGoal()">Save</button>
+    <div style="height:10px"></div>
+    <button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-goal')">Cancel</button>
+  </div>
+</div>
+
+<!-- Archived skills -->
+<div class="overlay" id="overlay-archived">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Archived skills</div>
+    <div id="archived-list"></div>
+    <button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-archived')">Close</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════
+
+const LIBRARY = [
+  {
+    id: 'huaqie',
+    name: '花切',
+    icon: '🃏',
+    desc: 'Card flourishing & cardistry',
+    defaultMilestones: [
+      'Complete a clean Charlier cut',
+      'Perform a one-handed waterfall',
+      'Learn the Sybil cut',
+      'Execute a smooth spring flourish',
+      'Create your first original combo',
+    ],
+    defaultResources: [
+      { name: 'Cardistry-Con on YouTube', type: 'video', url: 'https://youtube.com/@CardistryConOfficial' },
+      { name: 'Huron Low – beginner tutorials', type: 'video', url: 'https://youtube.com/@HuronLow' },
+      { name: 'Theory11 flourish tutorials', type: 'website', url: 'https://www.theory11.com' },
+    ]
+  },
+  {
+    id: 'guitar',
+    name: 'Guitar',
+    icon: '🎸',
+    desc: 'Acoustic or electric guitar',
+    defaultMilestones: [
+      'Learn 3 open chords (G, C, D)',
+      'Switch chords without pausing',
+      'Play your first full song',
+      'Learn a basic fingerpicking pattern',
+      'Play a 12-bar blues progression',
+    ],
+    defaultResources: [
+      { name: 'Justin Guitar – Beginner Course', type: 'website', url: 'https://www.justinguitar.com' },
+      { name: 'Fender Play', type: 'course', url: 'https://www.fender.com/play' },
+      { name: 'r/guitarlessons', type: 'community', url: 'https://reddit.com/r/guitarlessons' },
+    ]
+  },
+  {
+    id: 'drawing',
+    name: 'Drawing',
+    icon: '✏️',
+    desc: 'Sketching & illustration',
+    defaultMilestones: [
+      'Draw a recognizable face',
+      'Complete a still-life from observation',
+      'Master basic perspective',
+      'Finish a full illustration',
+    ],
+    defaultResources: [
+      { name: 'Ctrl+Paint – free fundamentals', type: 'website', url: 'https://www.ctrlpaint.com' },
+      { name: '"Drawing on the Right Side of the Brain"', type: 'book', url: '' },
+    ]
+  },
+  {
+    id: 'chess',
+    name: 'Chess',
+    icon: '♟️',
+    desc: 'Strategy & tactics',
+    defaultMilestones: [
+      'Learn all piece movements',
+      'Complete a game with a proper opening',
+      'Solve 50 tactics puzzles',
+      'Win a game in under 30 moves',
+    ],
+    defaultResources: [
+      { name: 'Chess.com lessons', type: 'website', url: 'https://www.chess.com/learn-how-to-play-chess' },
+      { name: 'Lichess (free, open source)', type: 'website', url: 'https://lichess.org' },
+    ]
+  },
+  {
+    id: 'language',
+    name: 'Language',
+    icon: '💬',
+    desc: 'Learning a new language',
+    defaultMilestones: [
+      'Learn 100 core vocabulary words',
+      'Hold a 1-minute conversation',
+      'Understand a short native podcast',
+      'Read a children\'s book in target language',
+    ],
+    defaultResources: [
+      { name: 'Anki – spaced repetition flashcards', type: 'website', url: 'https://apps.ankiweb.net' },
+      { name: 'italki – conversation practice', type: 'website', url: 'https://www.italki.com' },
+    ]
+  },
+  {
+    id: 'juggling',
+    name: 'Juggling',
+    icon: '🤹',
+    desc: 'Object manipulation & flow',
+    defaultMilestones: [
+      'Juggle 3 balls for 10 seconds',
+      'Juggle for 1 minute continuously',
+      'Learn the cascade pattern clean',
+      'Add a 4th object',
+    ],
+    defaultResources: [
+      { name: 'Juggling Edge tutorials', type: 'website', url: 'https://www.jugglingedge.com' },
+    ]
+  },
+  {
+    id: 'coding',
+    name: 'Coding',
+    icon: '💻',
+    desc: 'Programming a new language or skill',
+    defaultMilestones: [
+      'Write a working "Hello World"',
+      'Build a small project from scratch',
+      'Understand basic data structures',
+      'Complete a coding challenge',
+    ],
+    defaultResources: [
+      { name: 'freeCodeCamp', type: 'website', url: 'https://www.freecodecamp.org' },
+      { name: 'The Odin Project', type: 'course', url: 'https://www.theodinproject.com' },
+    ]
+  },
+  {
+    id: 'piano',
+    name: 'Piano',
+    icon: '🎹',
+    desc: 'Piano or keyboard',
+    defaultMilestones: [
+      'Play a one-octave C major scale',
+      'Coordinate both hands on a simple piece',
+      'Play a full beginner piece from memory',
+      'Sight-read a simple melody',
+    ],
+    defaultResources: [
+      { name: 'Simply Piano app', type: 'course', url: 'https://www.joytunes.com/simply-piano' },
+      { name: 'Flowkey', type: 'course', url: 'https://www.flowkey.com' },
+    ]
+  },
+];
+
+function loadData() {
+  return JSON.parse(localStorage.getItem('hundred_data') || '{"skills":[]}');
+}
+function saveData(d) {
+  localStorage.setItem('hundred_data', JSON.stringify(d));
+}
+
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let currentSkillId = null;
+let currentSessionIdx = null;
+let pendingLibItem = null;
+let timerInterval = null;
+let currentTab = 'sessions';
+let showArchivedMode = false;
+
+// ══════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════
+function navTo(screen) {
+  ['home','library','stats'].forEach(s => {
+    document.getElementById('screen-'+s).classList.toggle('active', s === screen);
+    document.getElementById('nav-'+s)?.classList.toggle('active', s === screen);
+  });
+  document.getElementById('screen-detail').classList.remove('active');
+  if (screen === 'library') renderLibrary();
+  if (screen === 'stats') renderStats();
+  if (screen === 'home') renderHome();
+}
+function goHome() {
+  stopTimerSilent();
+  navTo('home');
+}
+
+// ══════════════════════════════════════════
+//  HOME
+// ══════════════════════════════════════════
+function renderHome() {
+  const data = loadData();
+  const list = document.getElementById('skill-list');
+  const empty = document.getElementById('empty-home');
+  const active = data.skills.filter(s => !s.archived);
+  list.innerHTML = '';
+  if (active.length === 0) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  // sort by most recently practiced
+  active.sort((a, b) => {
+    const la = a.sessions.length ? a.sessions[a.sessions.length-1].ts : 0;
+    const lb = b.sessions.length ? b.sessions[b.sessions.length-1].ts : 0;
+    return lb - la;
+  });
+  active.forEach(skill => list.appendChild(makeSkillCard(skill)));
+}
+
+function makeSkillCard(skill) {
+  const totalMins = skill.sessions.reduce((s, x) => s + x.duration, 0);
+  const totalHrs = totalMins / 60;
+  const pct = Math.min(totalHrs / skill.goal, 1);
+  const circ = 2 * Math.PI * 26; // r=26 for small card
+
+  const card = document.createElement('div');
+  card.className = 'skill-card';
+  card.onclick = () => openDetail(skill.id);
+
+  // check if timer running for this skill
+  const running = skill.timerStart != null;
+
+  card.innerHTML = `
+    ${running ? `<div class="skill-active-badge"><div class="pulse"></div>recording</div>` : ''}
+    <div class="skill-card-header">
+      <div class="ring-wrap">
+        <svg viewBox="0 0 64 64">
+          <circle class="ring-bg" cx="32" cy="32" r="26"/>
+          <circle class="ring-fill" cx="32" cy="32" r="26"
+            stroke-dasharray="${circ.toFixed(2)}"
+            stroke-dashoffset="${(circ * (1 - pct)).toFixed(2)}"/>
+        </svg>
+        <div class="ring-label">
+          <span class="ring-pct">${Math.round(pct * 100)}%</span>
+        </div>
+      </div>
+      <div class="skill-info">
+        <div class="skill-name">${skill.icon} ${skill.name}</div>
+        <div class="skill-hours">${totalHrs.toFixed(1)}<span> / ${skill.goal}h</span></div>
+        <div class="skill-meta">${skill.sessions.length} session${skill.sessions.length !== 1 ? 's' : ''}</div>
+      </div>
+    </div>
+  `;
+  return card;
+}
+
+// ══════════════════════════════════════════
+//  DETAIL
+// ══════════════════════════════════════════
+function openDetail(id) {
+  currentSkillId = id;
+  currentTab = 'sessions';
+  const data = loadData();
+  const skill = data.skills.find(s => s.id === id);
+
+  document.getElementById('screen-home').classList.remove('active');
+  document.getElementById('screen-library').classList.remove('active');
+  document.getElementById('screen-stats').classList.remove('active');
+  document.getElementById('screen-detail').classList.add('active');
+
+  // reset tabs
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+  document.getElementById('tab-sessions').style.display = 'block';
+  document.getElementById('tab-milestones').style.display = 'none';
+  document.getElementById('tab-resources').style.display = 'none';
+
+  document.getElementById('detail-archive-btn').textContent = skill.archived ? 'unarchive' : 'archive';
+
+  renderDetail(skill);
+
+  // restore timer if running
+  if (skill.timerStart) {
+    startTimerUI(skill.timerStart);
+  } else {
+    resetTimerUI();
+  }
+}
+
+function renderDetail(skill) {
+  const totalMins = skill.sessions.reduce((s, x) => s + x.duration, 0);
+  const totalHrs = totalMins / 60;
+  const pct = Math.min(totalHrs / skill.goal, 1);
+  const circ = 2 * Math.PI * 38;
+
+  document.getElementById('detail-name').textContent = skill.icon + ' ' + skill.name;
+  document.getElementById('detail-hours-num').textContent = totalHrs.toFixed(1);
+  document.getElementById('detail-goal-txt').textContent = `Goal: ${skill.goal} hours`;
+
+  const ring = document.getElementById('detail-ring');
+  ring.style.strokeDashoffset = (circ * (1 - pct)).toFixed(2);
+
+  const lbl = document.getElementById('detail-ring-label');
+  lbl.innerHTML = `<span style="font-size:15px;font-weight:500">${Math.round(pct*100)}%</span>`;
+
+  renderSessions(skill);
+  renderMilestones(skill);
+  renderResources(skill);
+}
+
+function renderSessions(skill) {
+  const list = document.getElementById('sessions-list');
+  list.innerHTML = '';
+  if (!skill.sessions.length) {
+    list.innerHTML = `<div class="empty" style="padding:30px 20px"><p>No sessions yet. Start the timer or log manually.</p></div>`;
+    return;
+  }
+  const sorted = [...skill.sessions].reverse();
+  sorted.forEach((sess, ri) => {
+    const i = skill.sessions.length - 1 - ri;
+    const hrs = Math.floor(sess.duration / 60);
+    const mins = sess.duration % 60;
+    const durStr = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+    const dateStr = sess.date ? new Date(sess.date).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : '—';
+
+    const el = document.createElement('div');
+    el.className = 'session-item';
+    el.onclick = () => openSessionDetail(i);
+    el.innerHTML = `
+      <div class="session-row">
+        <div class="session-dur">${durStr}</div>
+        <div class="session-date">${dateStr}</div>
+      </div>
+      ${sess.note ? `<div class="session-note">${sess.note}</div>` : ''}
+      ${sess.milestone ? `<div class="session-milestone">✦ ${sess.milestone}</div>` : ''}
+    `;
+    list.appendChild(el);
+  });
+}
+
+function renderMilestones(skill) {
+  const list = document.getElementById('milestones-list');
+  list.innerHTML = '';
+  if (!skill.milestones.length) {
+    list.innerHTML = `<div class="empty" style="padding:30px 20px"><p>No milestones yet. Add some to track your progress.</p></div>`;
+    return;
+  }
+  skill.milestones.forEach((m, i) => {
+    const el = document.createElement('div');
+    el.className = 'milestone-item';
+    el.innerHTML = `
+      <div class="milestone-check ${m.done ? 'done' : ''}" onclick="toggleMilestone(${i})"></div>
+      <div class="milestone-text ${m.done ? 'done' : ''}">${m.text}</div>
+    `;
+    list.appendChild(el);
+  });
+}
+
+function renderResources(skill) {
+  const list = document.getElementById('resources-list');
+  list.innerHTML = '';
+  const icons = { video:'▶', book:'📖', website:'🔗', course:'🎓', community:'👥', other:'✦' };
+  if (!skill.resources.length) {
+    list.innerHTML = `<div class="empty" style="padding:30px 20px"><p>No resources yet. Add links, books, or courses.</p></div>`;
+    return;
+  }
+  skill.resources.forEach(r => {
+    const el = document.createElement('div');
+    el.className = 'resource-item';
+    if (r.url) el.style.cursor = 'pointer';
+    if (r.url) el.onclick = () => window.open(r.url, '_blank');
+    el.innerHTML = `
+      <div class="resource-icon">${icons[r.type] || '✦'}</div>
+      <div class="resource-info">
+        <div class="resource-name">${r.name}</div>
+        <div class="resource-type">${r.type}</div>
+      </div>
+      ${r.url ? `<div style="color:var(--muted);font-size:18px">›</div>` : ''}
+    `;
+    list.appendChild(el);
+  });
+}
+
+function switchTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-sessions').style.display = tab === 'sessions' ? 'block' : 'none';
+  document.getElementById('tab-milestones').style.display = tab === 'milestones' ? 'block' : 'none';
+  document.getElementById('tab-resources').style.display = tab === 'resources' ? 'block' : 'none';
+}
+
+// ══════════════════════════════════════════
+//  TIMER
+// ══════════════════════════════════════════
+function startTimer() {
+  const data = loadData();
+  const skill = data.skills.find(s => s.id === currentSkillId);
+  if (skill.timerStart) return;
+  const now = Date.now();
+  skill.timerStart = now;
+  saveData(data);
+  startTimerUI(now);
+}
+
+function startTimerUI(startTs) {
+  document.getElementById('timer-start-btn').style.display = 'none';
+  document.getElementById('timer-stop-btn').style.display = 'inline-flex';
+  const display = document.getElementById('timer-display');
+  display.classList.add('running');
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - startTs) / 1000);
+    const h = Math.floor(elapsed / 3600);
+    const m = Math.floor((elapsed % 3600) / 60);
+    const s = elapsed % 60;
+    display.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }, 1000);
+}
+
+function stopTimer() {
+  const data = loadData();
+  const skill = data.skills.find(s => s.id === currentSkillId);
+  if (!skill.timerStart) return;
+  const elapsed = Math.floor((Date.now() - skill.timerStart) / 1000);
+  const mins = Math.max(1, Math.round(elapsed / 60));
+  skill.timerStart = null;
+
+  const session = {
+    id: Date.now(),
+    duration: mins,
+    date: new Date().toISOString(),
+    note: '',
+    milestone: '',
+    ts: Date.now()
+  };
+  skill.sessions.push(session);
+  saveData(data);
+  stopTimerSilent();
+  renderDetail(skill);
+  renderHome();
+  showToast(`Session saved — ${mins} min`);
+}
+
+function stopTimerSilent() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  resetTimerUI();
+}
+
+function resetTimerUI() {
+  document.getElementById('timer-display').textContent = '00:00:00';
+  document.getElementById('timer-display').classList.remove('running');
+  document.getElementById('timer-start-btn').style.display = 'inline-flex';
+  document.getElementById('timer-stop-btn').style.display = 'none';
+}
+
+// ══════════════════════════════════════════
+//  MANUAL LOG
+// ══════════════════════════════════════════
+function openManualLog() {
+  document.getElementById('manual-dur').value = '';
+  document.getElementById('manual-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('manual-note').value = '';
+  document.getElementById('manual-milestone').value = '';
+  openOverlay('overlay-manual');
+}
+
+function confirmManualLog() {
+  const dur = parseInt(document.getElementById('manual-dur').value);
+  if (!dur || dur < 1) { showToast('Enter a valid duration'); return; }
+  const dateVal = document.getElementById('manual-date').value;
+  const note = document.getElementById('manual-note').value.trim();
+  const milestone = document.getElementById('manual-milestone').value.trim();
+
+  const data = loadData();
+  const skill = data.skills.find(s => s.id === currentSkillId);
+  skill.sessions.push({
+    id: Date.now(),
+    duration: dur,
+    date: dateVal ? new Date(dateVal).toISOString() : null,
+    note,
+    milestone,
+    ts: Date.now()
+  });
+  saveData(data);
+  closeOverlay('overlay-manual');
+  renderDetail(skill);
+  renderHome();
+  showToast('Session logged');
+}
+
+// ══════════════════════════════════════════
+//  SESSION DETAIL
+// ══════════════════════════════════════════
+function openSessionDetail(idx) {
+  currentSessionIdx = idx;
+  const data = loadData();
+  const skill = data.skills.find(s => s.id === currentSkillId);
+  const sess = skill.sessions[idx];
+
+  const hrs = Math.floor(sess.duration / 60);
+  const mins = sess.duration % 60;
+  const durStr = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+  const dateStr = sess.date ? new Date(sess.date).toLocaleDateString('en-US', {month:'long',day:'numeric',year:'numeric'}) : 'No date';
+
+  document.getElementById('session-detail-content').innerHTML = `
+    <div style="display:flex;justify-content:space-between;margin-bottom:12px">
+      <div style="font-family:var(--mono);font-size:24px">${durStr}</div>
+      <div style="color:var(--muted);font-size:13px;font-family:var(--mono);align-self:center">${dateStr}</div>
+    </div>
+  `;
+  document.getElementById('session-edit-note').value = sess.note || '';
+  document.getElementById('session-edit-milestone').value = sess.milestone || '';
+  openOverlay('overlay-session');
+}
+
+function saveSessionNote() {
+  const data = loadData();
+  const skill = data.skills.find(s => s.id === currentSkillId);
+  skill.sessions[currentSessionIdx].note = document.getElementById('session-edit-note').value.trim();
+  skill.sessions[currentSessionIdx].milestone = document.getElementById('session-edit-milestone').value.trim();
+  saveData(data);
+  closeOverlay('overlay-session');
+  renderDetail(skill);
+  showToast('Session updated');
+}
+
+function deleteSession() {
+  if (!confirm('Delete this session?')) return;
+  const data = loadData();
+  const skill = data.skills.find(s => s.id === currentSkillId);
+  skill.sessions.splice(currentSessionIdx, 1);
+  saveData(data);
+  closeOverlay('overlay-session');
+  renderDetail(skill);
+  renderHome();
+  showToast('Session deleted');
+}
+
+// ══════════════════════════════════════════
+//  MILESTONES
+// ══════════════════════════════════════════
+function openAddMilestone() {
+  document.getElementById('milestone-input').value = '';
+  openOverlay('overlay-milestone');
+}
+function confirmAddMilestone() {
+  const text = document.getElementById('milestone-input').value.trim();
+  if (!text) return;
+  const data = loadData();
+  const skill = data.skills.find(s => s.id === currentSkillId);
+  skill.milestones.push({ text, done: false });
+  saveData(data);
+  closeOverlay('overlay-milestone');
+  renderMilestones(skill);
+  showToast('Milestone added');
+}
+function toggleMilestone(idx) {
+  const data = loadData();
+  const skill = data.skills.find(s => s.id === currentSkillId);
+  skill.milestones[idx].done = !skill.milestones[idx].done;
+  saveData(data);
+  renderMilestones(skill);
+}
+
+// ══════════════════════════════════════════
+//  RESOURCES
+// ══════════════════════════════════════════
+function openAddResource() {
+  document.getElementById('resource-name').value = '';
+  document.getElementById('resource-url').value = '';
+  openOverlay('overlay-resource');
+}
+function confirmAddResource() {
+  const name = document.getElementById('resource-name').value.trim();
+  if (!name) return;
+  const data = loadData();
+  const skill = data.skills.find(s => s.id === currentSkillId);
+  skill.resources.push({
+    name,
+    type: document.getElementById('resource-type').value,
+    url: document.getElementById('resource-url').value.trim()
+  });
+  saveData(data);
+  closeOverlay('overlay-resource');
+  renderResources(skill);
+  showToast('Resource added');
+}
+
+// ══════════════════════════════════════════
+//  GOAL EDIT
+// ══════════════════════════════════════════
+function openEditGoal() {
+  const data = loadData();
+  const skill = data.skills.find(s => s.id === currentSkillId);
+  document.getElementById('goal-input').value = skill.goal;
+  openOverlay('overlay-goal');
+}
+function confirmEditGoal() {
+  const val = parseInt(document.getElementById('goal-input').value);
+  if (!val || val < 1) return;
+  const data = loadData();
+  const skill = data.skills.find(s => s.id === currentSkillId);
+  skill.goal = val;
+  saveData(data);
+  closeOverlay('overlay-goal');
+  renderDetail(skill);
+  showToast('Goal updated');
+}
+
+// ══════════════════════════════════════════
+//  ARCHIVE
+// ══════════════════════════════════════════
+function toggleArchiveSkill() {
+  const data = loadData();
+  const skill = data.skills.find(s => s.id === currentSkillId);
+  skill.archived = !skill.archived;
+  saveData(data);
+  showToast(skill.archived ? 'Skill archived' : 'Skill unarchived');
+  goHome();
+}
+
+function showArchived() {
+  const data = loadData();
+  const archived = data.skills.filter(s => s.archived);
+  const list = document.getElementById('archived-list');
+  list.innerHTML = '';
+  if (!archived.length) {
+    list.innerHTML = `<div class="empty" style="padding:20px 0"><p>No archived skills.</p></div>`;
+  } else {
+    archived.forEach(skill => {
+      const el = document.createElement('div');
+      el.style.cssText = 'padding:12px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;';
+      el.innerHTML = `
+        <div>
+          <div style="font-family:var(--serif);font-size:17px">${skill.icon} ${skill.name}</div>
+          <div style="color:var(--muted);font-size:12px;font-family:var(--mono)">${(skill.sessions.reduce((s,x)=>s+x.duration,0)/60).toFixed(1)}h logged</div>
+        </div>
+        <button class="btn btn-sm btn-outline" onclick="unarchiveFromList('${skill.id}')">restore</button>
+      `;
+      list.appendChild(el);
+    });
+  }
+  openOverlay('overlay-archived');
+}
+
+function unarchiveFromList(id) {
+  const data = loadData();
+  const skill = data.skills.find(s => s.id === id);
+  skill.archived = false;
+  saveData(data);
+  closeOverlay('overlay-archived');
+  renderHome();
+  showToast('Skill restored');
+}
+
+// ══════════════════════════════════════════
+//  LIBRARY
+// ══════════════════════════════════════════
+function renderLibrary() {
+  const data = loadData();
+  const ownedIds = data.skills.map(s => s.libId);
+  const grid = document.getElementById('library-grid');
+  grid.innerHTML = '';
+  LIBRARY.forEach(item => {
+    const owned = ownedIds.includes(item.id);
+    const el = document.createElement('div');
+    el.className = 'lib-card' + (owned ? ' owned' : '');
+    el.onclick = () => owned ? null : openLibAdd(item);
+    el.innerHTML = `
+      <div class="lib-icon">${item.icon}</div>
+      <div class="lib-name">${item.name}</div>
+      <div class="lib-desc">${owned ? '✓ added' : item.desc}</div>
+    `;
+    grid.appendChild(el);
+  });
+}
+
+function openLibAdd(item) {
+  pendingLibItem = item;
+  document.getElementById('lib-add-title').textContent = item.icon + ' ' + item.name;
+  document.getElementById('lib-add-desc').textContent = item.desc;
+  document.getElementById('lib-goal-input').value = 100;
+  openOverlay('overlay-lib-add');
+}
+
+function confirmAddFromLib() {
+  const goal = parseInt(document.getElementById('lib-goal-input').value) || 100;
+  const item = pendingLibItem;
+  const data = loadData();
+  data.skills.push({
+    id: 'skill_' + Date.now(),
+    libId: item.id,
+    name: item.name,
+    icon: item.icon,
+    goal,
+    sessions: [],
+    milestones: item.defaultMilestones.map(t => ({ text: t, done: false })),
+    resources: [...item.defaultResources],
+    archived: false,
+    timerStart: null
+  });
+  saveData(data);
+  closeOverlay('overlay-lib-add');
+  renderLibrary();
+  renderHome();
+  showToast(item.name + ' added!');
+}
+
+function openCustomSkill() {
+  document.getElementById('custom-name').value = '';
+  document.getElementById('custom-emoji').value = '';
+  document.getElementById('custom-goal').value = 100;
+  openOverlay('overlay-custom');
+}
+
+function confirmCustomSkill() {
+  const name = document.getElementById('custom-name').value.trim();
+  if (!name) return;
+  const icon = document.getElementById('custom-emoji').value.trim() || '✦';
+  const goal = parseInt(document.getElementById('custom-goal').value) || 100;
+  const data = loadData();
+  data.skills.push({
+    id: 'skill_' + Date.now(),
+    libId: null,
+    name, icon, goal,
+    sessions: [],
+    milestones: [],
+    resources: [],
+    archived: false,
+    timerStart: null
+  });
+  saveData(data);
+  closeOverlay('overlay-custom');
+  renderHome();
+  navTo('home');
+  showToast(name + ' created!');
+}
+
+// ══════════════════════════════════════════
+//  STATS
+// ══════════════════════════════════════════
+function renderStats() {
+  const data = loadData();
+  const el = document.getElementById('stats-content');
+  if (!data.skills.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📊</div><h3>No data yet</h3><p>Add a skill and log some sessions to see stats here.</p></div>`;
+    return;
+  }
+  let html = '';
+  const allSkills = data.skills.filter(s => !s.archived);
+  const totalHrs = allSkills.reduce((s, sk) => s + sk.sessions.reduce((a,x)=>a+x.duration,0), 0) / 60;
+  const totalSessions = allSkills.reduce((s, sk) => s + sk.sessions.length, 0);
+
+  html += `<div class="stats-card" style="margin:0 16px 14px">
+    <div class="stats-row"><div class="stats-label">Total hours logged</div><div class="stats-value">${totalHrs.toFixed(1)}h</div></div>
+    <div class="stats-row"><div class="stats-label">Total sessions</div><div class="stats-value">${totalSessions}</div></div>
+    <div class="stats-row"><div class="stats-label">Active skills</div><div class="stats-value">${allSkills.length}</div></div>
+  </div>`;
+
+  allSkills.forEach(skill => {
+    const hrs = skill.sessions.reduce((s,x)=>s+x.duration,0)/60;
+    const pct = Math.min(hrs/skill.goal*100,100).toFixed(0);
+    const done = skill.milestones.filter(m=>m.done).length;
+    const avg = skill.sessions.length ? (hrs / skill.sessions.length * 60).toFixed(0) : '—';
+    html += `
+    <div class="stats-card" style="margin:0 16px 14px">
+      <div style="font-family:var(--serif);font-size:18px;margin-bottom:12px">${skill.icon} ${skill.name}</div>
+      <div class="stats-row"><div class="stats-label">Hours logged</div><div class="stats-value">${hrs.toFixed(1)}h / ${skill.goal}h</div></div>
+      <div class="stats-row"><div class="stats-label">Progress</div><div class="stats-value" style="color:var(--gold)">${pct}%</div></div>
+      <div class="stats-row"><div class="stats-label">Sessions</div><div class="stats-value">${skill.sessions.length}</div></div>
+      <div class="stats-row"><div class="stats-label">Avg session</div><div class="stats-value">${avg} min</div></div>
+      <div class="stats-row"><div class="stats-label">Milestones</div><div class="stats-value">${done} / ${skill.milestones.length}</div></div>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+// ══════════════════════════════════════════
+//  OVERLAY UTILS
+// ══════════════════════════════════════════
+function openOverlay(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeOverlay(id) {
+  document.getElementById(id).classList.remove('open');
+}
+// close overlay on backdrop tap
+document.querySelectorAll('.overlay').forEach(ov => {
+  ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('open'); });
+});
+
+// ══════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+renderHome();
+</script>
+</body>
+</html>
