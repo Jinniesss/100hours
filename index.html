@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#eef2ff" id="theme-color-meta">
 <title>hour</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg:          #eef2ff;
@@ -72,12 +72,12 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
 
 /* ── LOGO ── */
 .logo{display:inline-flex;align-items:baseline;gap:0;cursor:default;user-select:none;position:relative}
-.logo-text{font-size:22px;font-weight:300;letter-spacing:-.5px;color:var(--text);line-height:1}
-.logo-ring-wrap{width:16px;height:16px;display:inline-block;position:relative;top:2px;margin:0 1px}
-.logo-ring-wrap svg{width:16px;height:16px;transform:rotate(-90deg);display:block}
-.logo-ring-bg{fill:none;stroke:var(--text3);stroke-width:2.2;opacity:.4}
-.logo-ring-arc{fill:none;stroke:url(#logoGrad);stroke-width:2.2;stroke-linecap:round;stroke-dasharray:30;stroke-dashoffset:16}
-.logo-super{font-size:8px;font-weight:500;letter-spacing:.1em;color:var(--text3);position:absolute;top:-1px;right:-18px;line-height:1}
+.logo-text{font-size:22px;font-weight:400;letter-spacing:-.5px;color:var(--text);line-height:1;font-family:'IBM Plex Mono','Courier New',monospace}
+.logo-ring-wrap{width:19px;height:19px;display:inline-block;position:relative;top:3px;margin:0 -1px}
+.logo-ring-wrap svg{width:19px;height:19px;transform:rotate(-90deg);display:block}
+.logo-ring-bg{fill:none;stroke:var(--text3);stroke-width:2.4;opacity:.4}
+.logo-ring-arc{fill:none;stroke:url(#logoGrad);stroke-width:2.4;stroke-linecap:round;stroke-dasharray:36;stroke-dashoffset:19}
+.logo-super{font-size:8px;font-weight:500;letter-spacing:.1em;color:var(--text3);position:absolute;top:-1px;right:-18px;line-height:1;font-family:'IBM Plex Mono','Courier New',monospace}
 
 .header-actions{display:flex;gap:8px;align-items:center}
 .theme-toggle{width:44px;height:26px;background:var(--glass);border:1px solid var(--glass-bdr);border-radius:13px;cursor:pointer;position:relative;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:background .3s;flex-shrink:0}
@@ -94,7 +94,7 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
 .screen{display:none}.screen.active{display:block}
 
 /* ── GLASS CARD ── */
-.glass-card{background:var(--glass);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--glass-bdr);border-radius:var(--r);box-shadow:var(--glass-shd);position:relative;overflow:hidden}
+.glass-card{background:var(--glass);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--glass-bdr);border-radius:var(--r);box-shadow:var(--glass-shd);position:relative;overflow:visible}
 .glass-card::before{content:'';position:absolute;top:0;left:0;right:0;height:48%;background:linear-gradient(180deg,var(--glass-hi) 0%,transparent 100%);border-radius:var(--r) var(--r) 60% 60%/20px 20px 10px 10px;pointer-events:none;z-index:1}
 .glass-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(79,126,255,.07) 0%,rgba(123,110,250,.05) 100%);border-radius:inherit;pointer-events:none;z-index:0}
 
@@ -109,8 +109,8 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
 /* ── RING ── */
 .ring-outer{position:relative;width:96px;height:96px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .ring-outer svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
-.ring-bg{fill:none;stroke:rgba(100,130,220,.18);stroke-width:7}
-.ring-fill{fill:none;stroke:url(#ringGrad);stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset .9s cubic-bezier(.4,0,.2,1)}
+.ring-bg{fill:none;stroke:rgba(100,130,220,.18);stroke-width:9}
+.ring-fill{fill:none;stroke:url(#ringGrad);stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset .9s cubic-bezier(.4,0,.2,1)}
 .ring-emoji-center{position:relative;z-index:2;width:66px;height:66px;display:flex;align-items:center;justify-content:center;font-size:30px;line-height:1}
 .skill-card-name{margin-top:9px;font-size:13px;font-weight:500;color:var(--text);text-align:center;letter-spacing:-.15px;line-height:1.2}
 .skill-card-hrs{font-size:11px;color:var(--text3);margin-top:2px;font-variant-numeric:tabular-nums}
@@ -253,12 +253,12 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
 
 /* ── RING ANIMATION DIM ── */
 #anim-dim{
-  display:none;position:fixed;inset:0;z-index:480;
+  display:none;position:fixed;inset:0;z-index:590;
   background:rgba(0,0,0,0);
   transition:background .4s ease;
   pointer-events:none;
 }
-#anim-dim.show{background:rgba(10,14,30,.55);}
+#anim-dim.show{background:rgba(10,14,30,.6);}
 
 /* ring counter overlay — shown inside the ring while animating */
 #ring-counter{
@@ -282,8 +282,7 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
 /* when animating, ring-anchor moves freely */
 #detail-ring-anchor.animating{
   position:fixed;
-  z-index:490;
-  /* width/height set by JS */
+  z-index:600;
   transition:
     top    .52s cubic-bezier(.34,1.1,.64,1),
     left   .52s cubic-bezier(.34,1.1,.64,1),
@@ -323,7 +322,9 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
         <span class="logo-text">h</span><div class="logo-ring-wrap"><svg viewBox="0 0 20 20"><circle class="logo-ring-bg" cx="10" cy="10" r="6"/><circle class="logo-ring-arc" cx="10" cy="10" r="6"/></svg></div><span class="logo-text">ur</span><span class="logo-super">100</span>
       </div>
       <div class="header-actions">
-        <button class="btn-icon btn" onclick="showArchived()" style="width:34px;height:34px;font-size:15px">↺</button>
+        <button class="btn-icon btn" onclick="showArchived()" style="width:34px;height:34px" title="Archived">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M21 8v13H3V8"/><path d="M23 3H1v5h22V3z"/><path d="M10 12h4"/></svg>
+        </button>
         <button class="theme-toggle" onclick="toggleTheme()"></button>
       </div>
     </div>
