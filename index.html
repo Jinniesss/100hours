@@ -254,11 +254,17 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
 /* ── RING ANIMATION DIM ── */
 #anim-dim{
   display:none;position:fixed;inset:0;z-index:590;
-  background:rgba(0,0,0,0);
-  transition:background .4s ease;
+  background:rgba(255,255,255,0);
+  backdrop-filter:blur(0px);
+  -webkit-backdrop-filter:blur(0px);
+  transition:background .4s ease, backdrop-filter .4s ease, -webkit-backdrop-filter .4s ease;
   pointer-events:none;
 }
-#anim-dim.show{background:rgba(10,14,30,.6);}
+#anim-dim.show{
+  background:rgba(235,238,255,0.72);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
 
 /* ring counter overlay — shown inside the ring while animating */
 #ring-counter{
@@ -1164,16 +1170,13 @@ function playSegmentAnim(skillId, oldMins, newMins){
 
   clone.appendChild(svg);
 
-  // counter text div
+  // counter text — percentage only, large
   const counter=document.createElement('div');
   counter.style.cssText='position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s ease;';
-  const hrsEl=document.createElement('div');
-  hrsEl.style.cssText='font-size:18px;font-weight:300;font-family:Inter,sans-serif;background:linear-gradient(135deg,#4F7EFF,#7B6EFA);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-variant-numeric:tabular-nums;line-height:1;';
-  hrsEl.textContent=oldHrs.toFixed(1);
   const pctEl=document.createElement('div');
-  pctEl.style.cssText='font-size:11px;font-weight:500;color:#aab4d4;margin-top:3px;font-variant-numeric:tabular-nums;font-family:Inter,sans-serif;';
+  pctEl.style.cssText='font-size:42px;font-weight:300;font-family:Inter,sans-serif;background:linear-gradient(135deg,#4F7EFF,#7B6EFA);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-variant-numeric:tabular-nums;line-height:1;letter-spacing:-1px;';
   pctEl.textContent=Math.round(oldPct*100)+'%';
-  counter.appendChild(hrsEl);counter.appendChild(pctEl);
+  counter.appendChild(pctEl);
   clone.appendChild(counter);
 
   document.body.appendChild(clone);
@@ -1190,7 +1193,7 @@ function playSegmentAnim(skillId, oldMins, newMins){
     clone.style.width=targetSize+'px';
     clone.style.height=targetSize+'px';
 
-    // PHASE 2: arrived — draw arc + count up
+    // PHASE 2: arrived — draw arc + count up pct
     setTimeout(()=>{
       counter.style.opacity='1';
 
@@ -1198,15 +1201,24 @@ function playSegmentAnim(skillId, oldMins, newMins){
       const newLen=((newPct-oldPct)*circ).toFixed(2);
       newArc.style.strokeDasharray=`${newLen} ${(circ-newLen).toFixed(2)}`;
 
-      // count up numbers
+      // count up percentage
       const dur=950, t0=performance.now();
       (function tick(now){
         const t=Math.min((now-t0)/dur,1);
         const e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
-        hrsEl.textContent=(oldHrs+(newHrs-oldHrs)*e).toFixed(1);
         pctEl.textContent=Math.round(oldPct*100+(newPct-oldPct)*100*e)+'%';
         if(t<1) requestAnimationFrame(tick);
       })(performance.now());
+
+      // glow pulse after arc finishes drawing — makes tiny progress visible
+      setTimeout(()=>{
+        // pulse: brighten the whole arc with a filter glow
+        svg.style.transition='filter .25s ease';
+        svg.style.filter='drop-shadow(0 0 8px rgba(79,126,255,0.9)) drop-shadow(0 0 20px rgba(123,110,250,0.6))';
+        setTimeout(()=>{
+          svg.style.filter='drop-shadow(0 0 3px rgba(79,126,255,0.4))';
+        },280);
+      },900);
 
       // PHASE 3: fly back
       setTimeout(()=>{
