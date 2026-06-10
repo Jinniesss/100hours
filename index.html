@@ -680,7 +680,6 @@ function resetTimerUI(){
 }
 
 // ══ DOC TOGGLE ══
-let docMode=true;
 function toggleDocMode(){
   docMode=!docMode;
   document.getElementById('doc-toggle').classList.toggle('on',docMode);
@@ -1163,6 +1162,10 @@ function showToast(msg){
 }
 
 renderHome();
-</script>
+
+// prevent pinch zoom — iOS Safari ignores the meta tag
+document.addEventListener('touchmove',function(e){if(e.touches.length>1)e.preventDefault();},{passive:false});
+document.addEventListener('gesturestart',function(e){e.preventDefault();},{passive:false});
+
 </body>
 </html>
