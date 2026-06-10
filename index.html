@@ -2,7 +2,7 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="100">
@@ -370,38 +370,57 @@ body {
 .toggle::after { content:''; position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%; background:#fff; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); box-shadow:0 1px 4px rgba(0,0,0,0.2); }
 .toggle.on::after { transform:translateX(22px); }
 
-/* ── ZOOM / SEGMENT ANIMATION ── */
+/* ── SEGMENT ANIMATION ── */
+/* dim layer */
 #seg-overlay {
-  display:none; position:fixed; inset:0; z-index:500;
-  pointer-events:none; overflow:hidden;
+  display:none; position:fixed; inset:0; z-index:490;
+  pointer-events:none;
 }
 #seg-overlay.active { display:block; }
-.seg-wrap {
+#seg-dim {
+  position:absolute; inset:0;
+  background:rgba(0,0,0,0);
+  transition: background 0.35s ease;
+}
+#seg-dim.show { background:rgba(0,0,0,0.28); }
+
+/* the floating segment element — JS sets initial position, then CSS transitions handle movement */
+#seg-piece {
   position:absolute;
-  transform-origin: center center;
-  animation: segZoom 2.6s cubic-bezier(0.4,0,0.2,1) forwards;
+  width:120px; height:120px;
+  pointer-events:none;
+  /* JS controls transform via .phase-* classes */
 }
-@keyframes segZoom {
-  0%   { transform: scale(1);   opacity: 0; }
-  12%  { transform: scale(1);   opacity: 1; }
-  38%  { transform: scale(6.5); opacity: 1; }
-  65%  { transform: scale(6.5); opacity: 1; }
-  88%  { transform: scale(1);   opacity: 1; }
-  100% { transform: scale(1);   opacity: 0; }
+#seg-piece svg {
+  width:120px; height:120px;
+  transform: rotate(-90deg);
+  overflow:visible;
+  filter: drop-shadow(0 4px 24px rgba(123,110,250,0.45));
 }
-.seg-ring-bg   { fill:none; stroke:rgba(180,160,220,0.22); stroke-width:5; }
-.seg-ring-base { fill:none; stroke:rgba(180,160,220,0.4);  stroke-width:5; stroke-linecap:round; }
-.seg-ring-new  { fill:none; stroke:url(#segGrad);           stroke-width:5.5; stroke-linecap:round; }
-.seg-pill {
-  position:absolute; left:50%; transform:translateX(-50%);
-  bottom:-32px;
-  background:var(--grad); color:#fff;
-  font-size:9px; font-weight:600; padding:3px 10px; border-radius:20px;
-  white-space:nowrap; letter-spacing:0.04em;
+.seg-ring-bg   { fill:none; stroke:rgba(180,160,220,0.18); stroke-width:6; }
+.seg-ring-base { fill:none; stroke:rgba(180,160,220,0.35); stroke-width:6; stroke-linecap:round; }
+.seg-ring-new  { fill:none; stroke:url(#segGrad); stroke-width:7; stroke-linecap:round;
+  transition: stroke-dashoffset 0.9s cubic-bezier(0.4,0,0.2,1); }
+
+/* phase transitions */
+#seg-piece {
+  transition: transform 0.55s cubic-bezier(0.34,1.2,0.64,1),
+              opacity   0.3s ease;
   opacity:0;
-  animation: pillFade 2.6s forwards;
 }
-@keyframes pillFade { 0%,15%{opacity:0} 35%,70%{opacity:1} 90%,100%{opacity:0} }
+#seg-piece.phase-origin  { opacity:1; /* transform set by JS: at ring position, scale(1) */ }
+#seg-piece.phase-center  { opacity:1; /* transform set by JS: at screen center, scale(3.5) */ }
+#seg-piece.phase-return  { opacity:0; /* transform set by JS: back to ring position, scale(1) */ }
+
+#seg-pill {
+  position:absolute; left:50%; transform:translateX(-50%);
+  bottom:-28px;
+  background:var(--grad); color:#fff;
+  font-size:10px; font-weight:600; padding:4px 12px; border-radius:20px;
+  white-space:nowrap; letter-spacing:0.03em;
+  opacity:0; transition: opacity 0.3s ease;
+}
+#seg-pill.show { opacity:1; }
 
 /* ── TOAST ── */
 .toast { position:fixed; top:calc(20px + var(--safe-top)); left:50%; transform:translateX(-50%) translateY(-90px); background:var(--glass); color:var(--text); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid var(--glass-border); box-shadow:var(--glass-shadow); padding:10px 22px; border-radius:50px; font-size:13px; font-weight:500; z-index:999; transition:transform 0.38s cubic-bezier(0.34,1.56,0.64,1); white-space:nowrap; }
@@ -617,15 +636,16 @@ body {
   <div style="height:10px"></div><button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-archived')">Close</button></div>
 </div>
 
-<!-- SEGMENT ZOOM OVERLAY -->
+<!-- SEGMENT ANIMATION -->
 <div id="seg-overlay">
-  <div class="seg-wrap" id="seg-wrap">
-    <svg id="seg-svg" width="100" height="100" viewBox="0 0 100 100" style="transform:rotate(-90deg);overflow:visible">
-      <circle class="seg-ring-bg"   cx="50" cy="50" r="42"/>
-      <circle class="seg-ring-base" id="seg-base" cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="263.89"/>
-      <circle class="seg-ring-new"  id="seg-new"  cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="263.89"/>
+  <div id="seg-dim"></div>
+  <div id="seg-piece">
+    <svg viewBox="0 0 120 120">
+      <circle class="seg-ring-bg"   cx="60" cy="60" r="50"/>
+      <circle class="seg-ring-base" id="seg-base" cx="60" cy="60" r="50" stroke-dasharray="314.16" stroke-dashoffset="314.16"/>
+      <circle class="seg-ring-new"  id="seg-new"  cx="60" cy="60" r="50" stroke-dasharray="314.16" stroke-dashoffset="314.16"/>
     </svg>
-    <div class="seg-pill" id="seg-pill"></div>
+    <div id="seg-pill"></div>
   </div>
 </div>
 
@@ -743,54 +763,104 @@ function makeSkillCard(sk){
   return card;
 }
 
-// ══ SEGMENT ZOOM ANIMATION ══
+// ══ SEGMENT ANIMATION: lift from ring → center → draw → return ══
 function playSegmentZoom(skillId, oldMins, newMins){
   const data=ld();
   const sk=data.skills.find(s=>s.id===skillId);
   if(!sk) return;
-  const circ=263.89, goal=sk.goal;
+
+  const circ=314.16; // 2*PI*50 for r=50
+  const goal=sk.goal;
   const oldPct=Math.min(oldMins/60/goal,1);
   const newPct=Math.min(newMins/60/goal,1);
   const addedHrs=(newMins-oldMins)/60;
 
-  // Arc positions: we only show the NEW slice segment
-  // seg-base = full progress up to old point
-  // seg-new  = only the new added arc
+  // --- set up arc values ---
   const segBase=document.getElementById('seg-base');
   const segNew=document.getElementById('seg-new');
   const pill=document.getElementById('seg-pill');
-
-  // base arc (existing progress)
-  segBase.style.strokeDashoffset=(circ*(1-oldPct)).toFixed(2);
-
-  // new arc: starts where old ended, draws forward
-  // dasharray = length of new segment only, offset = start position
-  const newLen=(newPct-oldPct)*circ;
-  const newOffset=circ-oldPct*circ; // start at end of old progress
-  segNew.style.strokeDasharray=`${newLen.toFixed(2)} ${(circ-newLen).toFixed(2)}`;
-  segNew.style.strokeDashoffset=newOffset.toFixed(2);
-
-  pill.textContent=`+${addedHrs.toFixed(1)}h · now ${(newPct*100).toFixed(1)}%`;
-
-  // position over the new segment midpoint on the ring
-  const card=document.getElementById('card-'+skillId);
-  const wrap=document.getElementById('seg-wrap');
-  let cx=window.innerWidth/2, cy=window.innerHeight/2;
-  if(card){
-    const rect=card.getBoundingClientRect();
-    cx=rect.left+rect.width/2;
-    cy=rect.top+rect.height/2;
-  }
-  wrap.style.left=cx+'px';
-  wrap.style.top=cy+'px';
-  wrap.style.transform='translate(-50%,-50%)';
-
-  // reset animation
+  const piece=document.getElementById('seg-piece');
+  const dim=document.getElementById('seg-dim');
   const overlay=document.getElementById('seg-overlay');
-  overlay.classList.remove('active');
-  void overlay.offsetWidth;
+
+  // base arc = existing progress (shown dim)
+  segBase.style.strokeDasharray=`${(oldPct*circ).toFixed(2)} ${(circ*(1-oldPct)).toFixed(2)}`;
+  segBase.style.strokeDashoffset='0';
+
+  // new arc = start at old position, initially zero length (will animate to new length)
+  const newLen=(newPct-oldPct)*circ;
+  segNew.style.strokeDasharray=`0 ${circ}`;        // start at 0
+  segNew.style.strokeDashoffset=`${-(oldPct*circ).toFixed(2)}`; // offset to start at right position
+  // (negative offset because SVG dashoffset goes clockwise from top after our rotate(-90deg))
+
+  pill.textContent=`+${addedHrs.toFixed(1)}h · ${(newPct*100).toFixed(1)}%`;
+  pill.classList.remove('show');
+
+  // --- find ring position on screen ---
+  const ringEl=document.getElementById('detail-ring-anchor');
+  let originX=window.innerWidth/2, originY=window.innerHeight/2;
+  if(ringEl){
+    const rect=ringEl.getBoundingClientRect();
+    originX=rect.left+rect.width/2;
+    originY=rect.top+rect.height/2;
+  }
+  const centerX=window.innerWidth/2;
+  const centerY=window.innerHeight/2;
+
+  // piece is 120x120, so offset by -60,-60 to center it on a point
+  const toOriginX=originX-60;
+  const toOriginY=originY-60;
+  const toCenterX=centerX-60;
+  const toCenterY=centerY-60;
+
+  // reset all classes and state
+  piece.className='';
+  piece.style.transition='none';
+  piece.style.opacity='0';
+  piece.style.transform=`translate(${toOriginX}px,${toOriginY}px) scale(1)`;
+
   overlay.classList.add('active');
-  setTimeout(()=>overlay.classList.remove('active'),2700);
+
+  // PHASE 1: appear at ring position (instant)
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      piece.style.transition='opacity 0.25s ease';
+      piece.style.opacity='1';
+
+      // PHASE 2: fly to center + scale up (after short appear)
+      setTimeout(()=>{
+        piece.style.transition=`transform 0.55s cubic-bezier(0.34,1.1,0.64,1), opacity 0.25s ease`;
+        piece.style.transform=`translate(${toCenterX}px,${toCenterY}px) scale(3.5)`;
+        dim.classList.add('show');
+
+        // PHASE 3: draw the new arc (after arriving at center)
+        setTimeout(()=>{
+          segNew.style.transition='stroke-dasharray 0.9s cubic-bezier(0.4,0,0.2,1)';
+          segNew.style.strokeDasharray=`${newLen.toFixed(2)} ${(circ-newLen).toFixed(2)}`;
+          pill.classList.add('show');
+
+          // PHASE 4: return to ring (after drawing)
+          setTimeout(()=>{
+            pill.classList.remove('show');
+            piece.style.transition=`transform 0.5s cubic-bezier(0.4,0,0.6,1), opacity 0.35s ease`;
+            piece.style.transform=`translate(${toOriginX}px,${toOriginY}px) scale(1)`;
+            dim.classList.remove('show');
+
+            // PHASE 5: fade out and clean up
+            setTimeout(()=>{
+              piece.style.opacity='0';
+              setTimeout(()=>{
+                overlay.classList.remove('active');
+                segNew.style.transition='none';
+              }, 350);
+            }, 450);
+
+          }, 1100); // hold at center after draw
+        }, 600);   // delay before drawing starts
+
+      }, 250);     // delay before flying to center
+    });
+  });
 }
 
 // ══ DETAIL ══
