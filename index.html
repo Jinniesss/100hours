@@ -71,14 +71,13 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
 .header{padding:calc(18px + var(--safe-top)) 22px 12px;display:flex;align-items:center;justify-content:space-between}
 
 /* ── LOGO ── */
-/* "h○ur" — the o is a mini progress ring */
-.logo{display:flex;align-items:center;gap:0;cursor:default;user-select:none;line-height:1}
-.logo-text{font-size:22px;font-weight:300;letter-spacing:.5px;color:var(--text)}
-.logo-ring-wrap{width:20px;height:20px;position:relative;display:inline-flex;align-items:center;justify-content:center;margin:0 0px}
-.logo-ring-wrap svg{width:20px;height:20px;transform:rotate(-90deg);overflow:visible}
-.logo-ring-bg{fill:none;stroke:var(--text3);stroke-width:2.5;opacity:.4}
-.logo-ring-arc{fill:none;stroke:url(#logoGrad);stroke-width:2.5;stroke-linecap:round;stroke-dasharray:37.7;stroke-dashoffset:20}
-.logo-sub{font-size:9px;font-weight:500;letter-spacing:.18em;color:var(--text3);text-transform:uppercase;margin-left:2px;align-self:flex-end;padding-bottom:2px}
+.logo{display:inline-flex;align-items:baseline;gap:0;cursor:default;user-select:none;position:relative}
+.logo-text{font-size:22px;font-weight:300;letter-spacing:-.5px;color:var(--text);line-height:1}
+.logo-ring-wrap{width:16px;height:16px;display:inline-block;position:relative;top:2px;margin:0 1px}
+.logo-ring-wrap svg{width:16px;height:16px;transform:rotate(-90deg);display:block}
+.logo-ring-bg{fill:none;stroke:var(--text3);stroke-width:2.2;opacity:.4}
+.logo-ring-arc{fill:none;stroke:url(#logoGrad);stroke-width:2.2;stroke-linecap:round;stroke-dasharray:30;stroke-dashoffset:16}
+.logo-super{font-size:8px;font-weight:500;letter-spacing:.1em;color:var(--text3);position:absolute;top:-1px;right:-18px;line-height:1}
 
 .header-actions{display:flex;gap:8px;align-items:center}
 .theme-toggle{width:44px;height:26px;background:var(--glass);border:1px solid var(--glass-bdr);border-radius:13px;cursor:pointer;position:relative;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:background .3s;flex-shrink:0}
@@ -293,15 +292,7 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
   <div id="screen-home" class="screen active">
     <div class="header">
       <div class="logo">
-        <span class="logo-text">h</span>
-        <div class="logo-ring-wrap">
-          <svg viewBox="0 0 20 20">
-            <circle class="logo-ring-bg" cx="10" cy="10" r="6"/>
-            <circle class="logo-ring-arc" cx="10" cy="10" r="6"/>
-          </svg>
-        </div>
-        <span class="logo-text">ur</span>
-        <span class="logo-sub">100</span>
+        <span class="logo-text">h</span><div class="logo-ring-wrap"><svg viewBox="0 0 20 20"><circle class="logo-ring-bg" cx="10" cy="10" r="6"/><circle class="logo-ring-arc" cx="10" cy="10" r="6"/></svg></div><span class="logo-text">ur</span><span class="logo-super">100</span>
       </div>
       <div class="header-actions">
         <button class="btn-icon btn" onclick="showArchived()" style="width:34px;height:34px;font-size:15px">↺</button>
@@ -358,7 +349,7 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
   <!-- LIBRARY -->
   <div id="screen-library" class="screen">
     <div class="header">
-      <div class="logo"><span class="logo-text">h</span><div class="logo-ring-wrap"><svg viewBox="0 0 20 20"><circle class="logo-ring-bg" cx="10" cy="10" r="6"/><circle class="logo-ring-arc" cx="10" cy="10" r="6"/></svg></div><span class="logo-text">ur</span><span class="logo-sub">100</span></div>
+      <div class="logo"><span class="logo-text">h</span><div class="logo-ring-wrap"><svg viewBox="0 0 20 20"><circle class="logo-ring-bg" cx="10" cy="10" r="6"/><circle class="logo-ring-arc" cx="10" cy="10" r="6"/></svg></div><span class="logo-text">ur</span><span class="logo-super">100</span></div>
     </div>
     <div class="library-grid" id="library-grid"></div>
     <div class="spacer"></div>
@@ -369,7 +360,7 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
   <!-- STATS -->
   <div id="screen-stats" class="screen">
     <div class="header">
-      <div class="logo"><span class="logo-text">h</span><div class="logo-ring-wrap"><svg viewBox="0 0 20 20"><circle class="logo-ring-bg" cx="10" cy="10" r="6"/><circle class="logo-ring-arc" cx="10" cy="10" r="6"/></svg></div><span class="logo-text">ur</span><span class="logo-sub">100</span></div>
+      <div class="logo"><span class="logo-text">h</span><div class="logo-ring-wrap"><svg viewBox="0 0 20 20"><circle class="logo-ring-bg" cx="10" cy="10" r="6"/><circle class="logo-ring-arc" cx="10" cy="10" r="6"/></svg></div><span class="logo-text">ur</span><span class="logo-super">100</span></div>
     </div>
     <div class="swipe-dots" id="swipe-dots"></div>
     <div class="stats-swiper-wrap" id="stats-swiper-wrap">
@@ -1166,6 +1157,6 @@ renderHome();
 // prevent pinch zoom — iOS Safari ignores the meta tag
 document.addEventListener('touchmove',function(e){if(e.touches.length>1)e.preventDefault();},{passive:false});
 document.addEventListener('gesturestart',function(e){e.preventDefault();},{passive:false});
-
+</script>
 </body>
 </html>
