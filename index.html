@@ -1079,123 +1079,156 @@ function onTouchEnd(e){
   }
 }
 
-// ══ RING ANIMATION — real ring moves ══
+// ══ RING ANIMATION — clone appended to body ══
 function playSegmentAnim(skillId, oldMins, newMins){
   const data=ld();
   const sk=data.skills.find(s=>s.id===skillId);
   if(!sk) return;
 
   const ringAnchor=document.getElementById('detail-ring-anchor');
-  const detailRing=document.getElementById('detail-ring');
-  const emoji=document.getElementById('detail-emoji');
-  const counter=document.getElementById('ring-counter');
-  const counterHrs=document.getElementById('ring-counter-hrs');
-  const counterPct=document.getElementById('ring-counter-pct');
   const dim=document.getElementById('anim-dim');
   if(!ringAnchor) return;
 
-  const circ=263.89; // matches detail ring r=42
+  const circ=263.89;
   const goal=sk.goal;
   const oldPct=Math.min(oldMins/60/goal,1);
   const newPct=Math.min(newMins/60/goal,1);
   const oldHrs=oldMins/60;
   const newHrs=newMins/60;
 
-  // get ring's current position on screen
+  // measure ring on screen
   const rect=ringAnchor.getBoundingClientRect();
+  const origSize=rect.width; // it's a square
   const origTop=rect.top;
   const origLeft=rect.left;
-  const origW=rect.width;
-  const origH=rect.height;
 
-  // target: center of screen, larger
-  const scale=3.2;
-  const targetW=origW*scale;
-  const targetH=origH*scale;
-  const targetLeft=(window.innerWidth-targetW)/2;
-  const targetTop=(window.innerHeight-targetH)/2;
+  // target: centered, scaled up
+  const targetSize=origSize*3.4;
+  const targetTop=(window.innerHeight-targetSize)/2;
+  const targetLeft=(window.innerWidth-targetSize)/2;
 
-  // STEP 0: freeze ring to fixed position before animating
-  ringAnchor.classList.add('animating');
-  ringAnchor.style.top=origTop+'px';
-  ringAnchor.style.left=origLeft+'px';
-  ringAnchor.style.width=origW+'px';
-  ringAnchor.style.height=origH+'px';
-  ringAnchor.style.transition='none';
+  // build a clone div appended directly to body
+  const clone=document.createElement('div');
+  clone.style.cssText=`
+    position:fixed;
+    top:${origTop}px;
+    left:${origLeft}px;
+    width:${origSize}px;
+    height:${origSize}px;
+    z-index:9999;
+    pointer-events:none;
+    display:flex;align-items:center;justify-content:center;
+  `;
 
-  // hide emoji during animation, show counter
-  emoji.style.opacity='0';
+  // SVG ring
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox','0 0 100 100');
+  svg.style.cssText='position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);';
+
+  const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
+  const grad=document.createElementNS('http://www.w3.org/2000/svg','linearGradient');
+  grad.setAttribute('id','animRingGrad');
+  grad.setAttribute('x1','0%');grad.setAttribute('y1','0%');
+  grad.setAttribute('x2','100%');grad.setAttribute('y2','100%');
+  const s1=document.createElementNS('http://www.w3.org/2000/svg','stop');
+  s1.setAttribute('offset','0%');s1.setAttribute('stop-color','#4F7EFF');
+  const s2=document.createElementNS('http://www.w3.org/2000/svg','stop');
+  s2.setAttribute('offset','100%');s2.setAttribute('stop-color','#7B6EFA');
+  grad.appendChild(s1);grad.appendChild(s2);defs.appendChild(grad);svg.appendChild(defs);
+
+  const bgCircle=document.createElementNS('http://www.w3.org/2000/svg','circle');
+  bgCircle.setAttribute('cx','50');bgCircle.setAttribute('cy','50');bgCircle.setAttribute('r','42');
+  bgCircle.setAttribute('fill','none');bgCircle.setAttribute('stroke','rgba(100,130,220,0.18)');
+  bgCircle.setAttribute('stroke-width','9');
+  svg.appendChild(bgCircle);
+
+  // existing progress arc
+  const baseArc=document.createElementNS('http://www.w3.org/2000/svg','circle');
+  baseArc.setAttribute('cx','50');baseArc.setAttribute('cy','50');baseArc.setAttribute('r','42');
+  baseArc.setAttribute('fill','none');baseArc.setAttribute('stroke','url(#animRingGrad)');
+  baseArc.setAttribute('stroke-width','9');baseArc.setAttribute('stroke-linecap','round');
+  const oldLen=(oldPct*circ).toFixed(2);
+  baseArc.setAttribute('stroke-dasharray',`${oldLen} ${(circ-oldLen).toFixed(2)}`);
+  baseArc.setAttribute('stroke-dashoffset','0');
+  svg.appendChild(baseArc);
+
+  // new progress arc (starts at 0, will animate to newLen)
+  const newArc=document.createElementNS('http://www.w3.org/2000/svg','circle');
+  newArc.setAttribute('cx','50');newArc.setAttribute('cy','50');newArc.setAttribute('r','42');
+  newArc.setAttribute('fill','none');newArc.setAttribute('stroke','url(#animRingGrad)');
+  newArc.setAttribute('stroke-width','9');newArc.setAttribute('stroke-linecap','round');
+  newArc.setAttribute('stroke-dasharray',`0 ${circ}`);
+  newArc.setAttribute('stroke-dashoffset',`${-(oldPct*circ).toFixed(2)}`);
+  newArc.style.transition='stroke-dasharray 0.95s cubic-bezier(0.4,0,0.2,1)';
+  svg.appendChild(newArc);
+
+  clone.appendChild(svg);
+
+  // counter text div
+  const counter=document.createElement('div');
+  counter.style.cssText='position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s ease;';
+  const hrsEl=document.createElement('div');
+  hrsEl.style.cssText='font-size:18px;font-weight:300;font-family:Inter,sans-serif;background:linear-gradient(135deg,#4F7EFF,#7B6EFA);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-variant-numeric:tabular-nums;line-height:1;';
+  hrsEl.textContent=oldHrs.toFixed(1);
+  const pctEl=document.createElement('div');
+  pctEl.style.cssText='font-size:11px;font-weight:500;color:#aab4d4;margin-top:3px;font-variant-numeric:tabular-nums;font-family:Inter,sans-serif;';
+  pctEl.textContent=Math.round(oldPct*100)+'%';
+  counter.appendChild(hrsEl);counter.appendChild(pctEl);
+  clone.appendChild(counter);
+
+  document.body.appendChild(clone);
 
   // show dim
   dim.style.display='block';
-  requestAnimationFrame(()=>{ dim.classList.add('show'); });
+  requestAnimationFrame(()=>dim.classList.add('show'));
 
-  // STEP 1: fly to center (after a tick to register initial fixed position)
+  // PHASE 1: fly to center
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    ringAnchor.style.transition=
-      'top .52s cubic-bezier(.34,1.1,.64,1), left .52s cubic-bezier(.34,1.1,.64,1), width .52s cubic-bezier(.34,1.1,.64,1), height .52s cubic-bezier(.34,1.1,.64,1)';
-    ringAnchor.style.top=targetTop+'px';
-    ringAnchor.style.left=targetLeft+'px';
-    ringAnchor.style.width=targetW+'px';
-    ringAnchor.style.height=targetH+'px';
+    clone.style.transition='top .52s cubic-bezier(.34,1.1,.64,1), left .52s cubic-bezier(.34,1.1,.64,1), width .52s cubic-bezier(.34,1.1,.64,1), height .52s cubic-bezier(.34,1.1,.64,1)';
+    clone.style.top=targetTop+'px';
+    clone.style.left=targetLeft+'px';
+    clone.style.width=targetSize+'px';
+    clone.style.height=targetSize+'px';
 
-    // STEP 2: after arriving at center, draw arc + count up numbers
+    // PHASE 2: arrived — draw arc + count up
     setTimeout(()=>{
-      // show counter
-      counterHrs.textContent=oldHrs.toFixed(1);
-      counterPct.textContent=Math.round(oldPct*100)+'%';
-      counter.classList.add('show');
+      counter.style.opacity='1';
 
-      // draw the new arc
-      detailRing.style.transition='stroke-dashoffset .95s cubic-bezier(.4,0,.2,1)';
-      detailRing.style.strokeDashoffset=(circ*(1-newPct)).toFixed(2);
+      // draw new arc
+      const newLen=((newPct-oldPct)*circ).toFixed(2);
+      newArc.style.strokeDasharray=`${newLen} ${(circ-newLen).toFixed(2)}`;
 
-      // animate numbers counting up
-      const duration=950;
-      const startTime=performance.now();
-      function countUp(now){
-        const t=Math.min((now-startTime)/duration,1);
-        const ease=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2; // ease in-out quad
-        const curHrs=oldHrs+(newHrs-oldHrs)*ease;
-        const curPct=oldPct*100+(newPct-oldPct)*100*ease;
-        counterHrs.textContent=curHrs.toFixed(1);
-        counterPct.textContent=Math.round(curPct)+'%';
-        if(t<1) requestAnimationFrame(countUp);
-      }
-      requestAnimationFrame(countUp);
+      // count up numbers
+      const dur=950, t0=performance.now();
+      (function tick(now){
+        const t=Math.min((now-t0)/dur,1);
+        const e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+        hrsEl.textContent=(oldHrs+(newHrs-oldHrs)*e).toFixed(1);
+        pctEl.textContent=Math.round(oldPct*100+(newPct-oldPct)*100*e)+'%';
+        if(t<1) requestAnimationFrame(tick);
+      })(performance.now());
 
-      // STEP 3: hold, then fly back
+      // PHASE 3: fly back
       setTimeout(()=>{
-        // fade counter, show emoji again
-        counter.classList.remove('show');
-        setTimeout(()=>{ emoji.style.opacity='1'; },200);
-
-        // fly back
-        ringAnchor.style.transition=
-          'top .48s cubic-bezier(.4,0,.6,1), left .48s cubic-bezier(.4,0,.6,1), width .48s cubic-bezier(.4,0,.6,1), height .48s cubic-bezier(.4,0,.6,1)';
-        ringAnchor.style.top=origTop+'px';
-        ringAnchor.style.left=origLeft+'px';
-        ringAnchor.style.width=origW+'px';
-        ringAnchor.style.height=origH+'px';
+        counter.style.opacity='0';
+        clone.style.transition='top .48s cubic-bezier(.4,0,.6,1), left .48s cubic-bezier(.4,0,.6,1), width .48s cubic-bezier(.4,0,.6,1), height .48s cubic-bezier(.4,0,.6,1)';
+        clone.style.top=origTop+'px';
+        clone.style.left=origLeft+'px';
+        clone.style.width=origSize+'px';
+        clone.style.height=origSize+'px';
         dim.classList.remove('show');
 
-        // STEP 4: restore to normal flow after returning
+        // PHASE 4: done — remove clone, update real ring
         setTimeout(()=>{
-          ringAnchor.classList.remove('animating');
-          ringAnchor.style.top='';
-          ringAnchor.style.left='';
-          ringAnchor.style.width='';
-          ringAnchor.style.height='';
-          ringAnchor.style.transition='';
+          document.body.removeChild(clone);
           dim.style.display='none';
-          // now update the display text
           const data2=ld();
           const sk2=data2.skills.find(s=>s.id===skillId);
           if(sk2) renderDetail(sk2);
-        },520);
+        },500);
 
-      },1200); // hold time at center
-    },560); // wait for ring to arrive at center
+      },1200);
+    },560);
   }));
 }
 
