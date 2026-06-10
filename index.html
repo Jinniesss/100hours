@@ -6,562 +6,491 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="100">
-<meta name="theme-color" content="#ffffff" id="theme-color-meta">
+<meta name="theme-color" content="#f0ecff" id="theme-color-meta">
 <title>100</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,200;0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600&display=swap" rel="stylesheet">
 <style>
 /* ── TOKENS ── */
 :root {
-  --bg: #F5F7FA;
-  --bg2: #ECEEF2;
-  --glass: rgba(255,255,255,0.72);
-  --glass-border: rgba(255,255,255,0.9);
-  --glass-shadow: 0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
-  --text: #0D0D0F;
-  --text2: #6B7280;
-  --text3: #9CA3AF;
-  --grad-start: #6E8EFA;
-  --grad-end: #B06EFA;
-  --grad: linear-gradient(135deg, #6E8EFA, #B06EFA);
+  --bg-a: #f0ecff;
+  --bg-b: #fce4f0;
+  --bg-c: #e0f0ff;
+  --bg-d: #f5f0ff;
+  --glass: rgba(255,255,255,0.55);
+  --glass-hi: rgba(255,255,255,0.92);
+  --glass-lo: rgba(255,255,255,0.18);
+  --glass-border: rgba(255,255,255,0.75);
+  --glass-shadow: 0 8px 40px rgba(120,80,200,0.10), 0 2px 12px rgba(0,0,0,0.06);
+  --text: #1a1025;
+  --text2: #7c6e99;
+  --text3: #b0a4c8;
+  --grad-a: #7B6EFA;
+  --grad-b: #D06EDE;
+  --grad-c: #6EBFFA;
+  --grad: linear-gradient(135deg, #7B6EFA 0%, #D06EDE 60%, #6EBFFA 100%);
+  --grad-soft: linear-gradient(135deg, rgba(123,110,250,0.18) 0%, rgba(208,110,222,0.12) 100%);
   --danger: #FF453A;
-  --green: #30D158;
-  --surface: rgba(255,255,255,0.85);
-  --border: rgba(0,0,0,0.06);
-  --nav-bg: rgba(255,255,255,0.85);
-  --mono: 'IBM Plex Mono', monospace;
+  --green: #34C759;
+  --nav-bg: rgba(248,244,255,0.88);
+  --surface: rgba(255,255,255,0.62);
+  --border: rgba(180,160,220,0.18);
+  --mono: 'Inter', sans-serif;
   --sans: 'Inter', sans-serif;
-  --r: 20px;
-  --r-sm: 12px;
+  --r: 22px;
+  --r-sm: 14px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bot: env(safe-area-inset-bottom, 0px);
 }
 [data-theme="dark"] {
-  --bg: #0D0D0F;
-  --bg2: #1A1A1F;
-  --glass: rgba(28,28,35,0.75);
-  --glass-border: rgba(255,255,255,0.08);
-  --glass-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2);
-  --text: #F5F5F7;
-  --text2: #98989F;
-  --text3: #6B6B72;
-  --surface: rgba(28,28,35,0.9);
-  --border: rgba(255,255,255,0.06);
-  --nav-bg: rgba(18,18,22,0.9);
+  --bg-a: #130d1f;
+  --bg-b: #1a0d1a;
+  --bg-c: #0d1220;
+  --bg-d: #150d22;
+  --glass: rgba(30,20,50,0.62);
+  --glass-hi: rgba(255,255,255,0.10);
+  --glass-lo: rgba(255,255,255,0.04);
+  --glass-border: rgba(255,255,255,0.09);
+  --glass-shadow: 0 8px 40px rgba(0,0,0,0.45), 0 2px 12px rgba(0,0,0,0.3);
+  --text: #f0ecff;
+  --text2: #9d8fbb;
+  --text3: #5e5278;
+  --nav-bg: rgba(16,10,28,0.92);
+  --surface: rgba(30,20,50,0.7);
+  --border: rgba(255,255,255,0.07);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
 body {
-  background: var(--bg);
-  color: var(--text);
   font-family: var(--sans);
   font-size: 15px;
   min-height: 100dvh;
   overflow-x: hidden;
-  transition: background 0.4s ease, color 0.4s ease;
+  color: var(--text);
+  transition: color 0.5s;
+  position: relative;
 }
 
-/* ── LAYOUT ── */
-#app { max-width: 480px; margin: 0 auto; padding: 0 0 calc(84px + var(--safe-bot)); }
+/* ── ANIMATED BG ── */
+.bg-canvas {
+  position: fixed; inset: 0; z-index: 0;
+  background: var(--bg-a);
+  transition: background 0.5s;
+  overflow: hidden;
+}
+.bg-blob {
+  position: absolute; border-radius: 50%;
+  filter: blur(70px); opacity: 0.55;
+  animation: blobDrift 18s ease-in-out infinite alternate;
+}
+.bg-blob:nth-child(1) { width: 420px; height: 420px; top: -80px; left: -80px; background: radial-gradient(circle, #c9b8ff, #e8b4f8); animation-duration: 16s; }
+.bg-blob:nth-child(2) { width: 340px; height: 340px; top: 30%; right: -60px; background: radial-gradient(circle, #b8d8ff, #d4b8ff); animation-duration: 20s; animation-delay: -6s; }
+.bg-blob:nth-child(3) { width: 300px; height: 300px; bottom: 10%; left: 10%; background: radial-gradient(circle, #f8b8e8, #c8b8ff); animation-duration: 14s; animation-delay: -10s; }
+.bg-blob:nth-child(4) { width: 250px; height: 250px; bottom: 20%; right: 5%; background: radial-gradient(circle, #b8f0ff, #d8b8ff); animation-duration: 22s; animation-delay: -4s; }
+@keyframes blobDrift {
+  0%   { transform: translate(0,0) scale(1); }
+  33%  { transform: translate(30px,-20px) scale(1.06); }
+  66%  { transform: translate(-20px,30px) scale(0.96); }
+  100% { transform: translate(15px,10px) scale(1.03); }
+}
+[data-theme="dark"] .bg-blob { opacity: 0.25; }
+[data-theme="dark"] .bg-blob:nth-child(1) { background: radial-gradient(circle, #3d2060, #5a1060); }
+[data-theme="dark"] .bg-blob:nth-child(2) { background: radial-gradient(circle, #102040, #2d1060); }
+[data-theme="dark"] .bg-blob:nth-child(3) { background: radial-gradient(circle, #401030, #2010508); }
+[data-theme="dark"] .bg-blob:nth-child(4) { background: radial-gradient(circle, #102030, #301060); }
+
+#app {
+  position: relative; z-index: 1;
+  max-width: 480px; margin: 0 auto;
+  padding: 0 0 calc(84px + var(--safe-bot));
+}
 
 /* ── HEADER ── */
 .header {
-  padding: calc(20px + var(--safe-top)) 24px 16px;
+  padding: calc(20px + var(--safe-top)) 22px 12px;
   display: flex; align-items: center; justify-content: space-between;
 }
+
+/* ── LOGO ── */
 .logo {
-  font-family: var(--mono);
-  font-size: 28px;
-  letter-spacing: -1px;
-  line-height: 1;
+  display: flex; align-items: center; gap: 1px;
+  cursor: default; user-select: none;
 }
-.logo .l1 { font-weight: 600; background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.logo .l2 { font-weight: 400; color: var(--text); -webkit-text-fill-color: var(--text); opacity: 0.8; }
-.logo .l3 { font-weight: 300; color: var(--text); -webkit-text-fill-color: var(--text); opacity: 0.45; }
+.logo-one {
+  font-size: 26px; font-weight: 200; letter-spacing: -1px;
+  color: var(--text); line-height: 1; padding-right: 1px;
+}
+.logo-circle {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid var(--text3); flex-shrink: 0;
+  margin: 0 2px;
+}
+.logo-ring-svg {
+  width: 24px; height: 24px; flex-shrink: 0;
+  transform: rotate(-90deg);
+}
+.logo-ring-bg { fill: none; stroke: var(--text3); stroke-width: 3; opacity: 0.35; }
+.logo-ring-fill { fill: none; stroke: url(#logoGrad); stroke-width: 3; stroke-linecap: round;
+  stroke-dasharray: 56.5; stroke-dashoffset: 28; /* ~50% filled */ }
 
 .header-actions { display: flex; gap: 8px; align-items: center; }
 
 /* ── THEME TOGGLE ── */
 .theme-toggle {
-  width: 44px; height: 26px;
-  background: var(--bg2);
-  border-radius: 13px; border: none; cursor: pointer;
-  position: relative; transition: background 0.3s;
-  flex-shrink: 0;
+  width: 46px; height: 27px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  border-radius: 14px; cursor: pointer; position: relative;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  transition: background 0.3s;
 }
 .theme-toggle::after {
-  content: '';
-  position: absolute; top: 3px; left: 3px;
-  width: 20px; height: 20px; border-radius: 50%;
-  background: var(--grad);
-  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  content: ''; position: absolute; top: 3px; left: 3px;
+  width: 19px; height: 19px; border-radius: 50%;
+  background: var(--grad); transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 2px 6px rgba(120,80,200,0.3);
 }
-[data-theme="dark"] .theme-toggle::after { transform: translateX(18px); }
+[data-theme="dark"] .theme-toggle::after { transform: translateX(19px); }
 
-/* ── BOTTOM NAV ── */
+/* ── NAV ── */
 .nav {
   position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
   width: 100%; max-width: 480px;
   background: var(--nav-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
   border-top: 1px solid var(--border);
-  display: flex;
-  padding-bottom: var(--safe-bot);
-  z-index: 100;
+  display: flex; padding-bottom: var(--safe-bot); z-index: 100;
 }
 .nav-btn {
   flex: 1; display: flex; flex-direction: column; align-items: center;
   gap: 3px; padding: 10px 0; background: none; border: none;
   color: var(--text3); cursor: pointer; font-family: var(--sans);
   font-size: 10px; font-weight: 500; transition: color 0.2s;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
 }
-.nav-btn.active { color: var(--grad-start); }
-.nav-btn svg { width: 22px; height: 22px; }
+.nav-btn.active { color: var(--grad-a); }
+.nav-btn svg { width: 21px; height: 21px; }
 
 /* ── SCREENS ── */
 .screen { display: none; }
 .screen.active { display: block; }
 
-/* ── HOME GRID ── */
-.skills-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
-  padding: 8px 16px;
+/* ── LIQUID GLASS CARD ── */
+.glass-card {
+  background: var(--glass);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r);
+  box-shadow: var(--glass-shadow);
+  position: relative; overflow: hidden;
+}
+/* specular highlight arc */
+.glass-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, var(--glass-hi) 0%, transparent 100%);
+  border-radius: var(--r) var(--r) 60% 60% / 20px 20px 12px 12px;
+  pointer-events: none; z-index: 1;
+}
+/* colorful edge shimmer */
+.glass-card::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(123,110,250,0.08) 0%, rgba(208,110,222,0.06) 50%, rgba(110,191,250,0.06) 100%);
+  border-radius: inherit; pointer-events: none; z-index: 0;
 }
 
-/* ── SKILL CARD (grid) ── */
+/* ── HOME GRID ── */
+.skills-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px; padding: 8px 16px;
+}
+
+/* ── SKILL CARD ── */
 .skill-card {
   aspect-ratio: 1;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  cursor: pointer;
-  padding: 16px 8px 12px;
-  border-radius: var(--r);
-  position: relative;
-  transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1);
-  /* no border, no shadow — invisible boundaries */
+  cursor: pointer; padding: 12px 8px 14px;
+  position: relative; z-index: 1;
+  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
 }
+.skill-card > * { position: relative; z-index: 2; }
 .skill-card:active { transform: scale(0.93); }
-.skill-card.entering {
-  animation: cardEnter 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards;
-}
-.skill-card.leaving {
-  animation: cardLeave 0.3s cubic-bezier(0.4,0,1,1) forwards;
-}
-@keyframes cardEnter {
-  from { opacity: 0; transform: scale(0.5) translateY(20px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
-}
-@keyframes cardLeave {
-  from { opacity: 1; transform: scale(1); }
-  to   { opacity: 0; transform: scale(0.4) translateY(30px); }
-}
+.skill-card.entering { animation: cardEnter 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
+.skill-card.leaving  { animation: cardLeave 0.28s cubic-bezier(0.4,0,1,1) forwards; }
+@keyframes cardEnter { from{opacity:0;transform:scale(0.4) translateY(30px)} to{opacity:1;transform:scale(1) translateY(0)} }
+@keyframes cardLeave { from{opacity:1;transform:scale(1)} to{opacity:0;transform:scale(0.3) translateY(40px)} }
 
-/* ── RING (home grid) ── */
-.ring-wrap {
-  position: relative;
-  width: 100px; height: 100px;
-  flex-shrink: 0;
-}
-.ring-wrap svg { width: 100px; height: 100px; transform: rotate(-90deg); }
-.ring-bg { fill: none; stroke: var(--bg2); stroke-width: 6; }
-.ring-fill {
-  fill: none;
-  stroke: url(#ringGrad);
-  stroke-width: 6;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 0.8s cubic-bezier(0.4,0,0.2,1);
-}
-.ring-emoji {
-  position: absolute; inset: 0;
+/* ── RING (home) ── */
+.ring-outer {
+  position: relative; width: 96px; height: 96px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 30px;
+}
+.ring-outer svg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  transform: rotate(-90deg);
+}
+.ring-bg  { fill: none; stroke: rgba(180,160,220,0.22); stroke-width: 5; }
+.ring-fill { fill: none; stroke: url(#ringGrad); stroke-width: 5; stroke-linecap: round;
+  transition: stroke-dashoffset 0.9s cubic-bezier(0.4,0,0.2,1); }
+.ring-emoji-center {
+  position: relative; z-index: 2;
+  width: 66px; height: 66px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px; line-height: 1;
+  /* perfect centering */
+  text-rendering: optimizeLegibility;
 }
 .skill-card-name {
-  margin-top: 10px;
-  font-size: 13px; font-weight: 500;
-  color: var(--text);
-  text-align: center;
-  letter-spacing: -0.1px;
+  margin-top: 9px; font-size: 13px; font-weight: 500;
+  color: var(--text); text-align: center; letter-spacing: -0.15px;
+  line-height: 1.2;
 }
 .skill-card-hrs {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--text3);
-  margin-top: 3px;
+  font-size: 11px; color: var(--text3); margin-top: 2px;
+  font-weight: 400; font-variant-numeric: tabular-nums;
 }
-
 .recording-dot {
-  position: absolute; top: 12px; right: 12px;
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--danger);
-  animation: pulse 1.2s ease infinite;
+  position: absolute; top: 10px; right: 10px;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--danger); z-index: 3;
+  animation: pulseRed 1.2s ease infinite;
 }
-@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+@keyframes pulseRed { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.45;transform:scale(0.75)} }
 
-/* ── EMPTY STATE ── */
-.empty {
-  text-align: center; padding: 70px 32px;
-  color: var(--text2);
-  animation: fadeIn 0.4s ease;
-}
-.empty-icon { font-size: 52px; margin-bottom: 16px; }
-.empty h3 { font-size: 20px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
-.empty p { font-size: 14px; line-height: 1.6; }
-@keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+/* ── EMPTY ── */
+.empty { text-align:center; padding:70px 32px; color:var(--text2); animation:fadeUp 0.4s ease; }
+.empty-icon { font-size:50px; margin-bottom:16px; }
+.empty h3 { font-size:20px; font-weight:600; color:var(--text); margin-bottom:8px; }
+.empty p { font-size:14px; line-height:1.65; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
 
 /* ── BUTTONS ── */
 .btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
   padding: 13px 22px; border-radius: 50px; border: none;
   font-family: var(--sans); font-size: 15px; font-weight: 500;
-  cursor: pointer; transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1), opacity 0.15s;
-  letter-spacing: -0.1px;
+  cursor: pointer; letter-spacing: -0.1px;
+  transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), opacity 0.15s;
 }
-.btn:active { transform: scale(0.94); }
-.btn-primary { background: var(--grad); color: #fff; }
-.btn-secondary { background: var(--bg2); color: var(--text); }
+.btn:active { transform: scale(0.93); }
+.btn-primary { background: var(--grad); color: #fff; box-shadow: 0 4px 20px rgba(123,110,250,0.3); }
+.btn-secondary { background: var(--glass); color: var(--text); border: 1px solid var(--glass-border); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
 .btn-danger { background: var(--danger); color: #fff; }
-.btn-outline {
-  background: var(--glass); color: var(--text);
-  border: 1px solid var(--border);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-}
+.btn-outline { background: var(--glass); color: var(--text); border: 1px solid var(--glass-border); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
 .btn-full { width: 100%; }
 .btn-sm { padding: 8px 16px; font-size: 13px; }
-.btn-icon {
-  width: 36px; height: 36px; padding: 0; border-radius: 50%;
-  background: var(--glass); border: 1px solid var(--border);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  color: var(--text);
-}
+.btn-icon { width: 36px; height: 36px; padding: 0; border-radius: 50%; background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: var(--text); }
 
-/* ── GLASS CARD ── */
-.glass-card {
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--r);
-  box-shadow: var(--glass-shadow);
-}
-
-/* ── DETAIL SCREEN ── */
-.detail-header {
-  padding: calc(16px + var(--safe-top)) 20px 12px;
-  display: flex; align-items: center; gap: 12px;
-}
-.detail-hero {
-  margin: 0 16px 20px;
-  padding: 24px;
-  display: flex; align-items: center; gap: 20px;
-}
-.detail-ring-wrap { position: relative; width: 100px; height: 100px; flex-shrink: 0; }
-.detail-ring-wrap svg { width: 100px; height: 100px; transform: rotate(-90deg); }
-.detail-info { flex: 1; }
-.detail-name { font-size: 24px; font-weight: 600; line-height: 1.1; }
-.detail-hours {
-  font-family: var(--mono); font-size: 28px; font-weight: 500;
-  background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  margin-top: 6px;
-}
-.detail-hours-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+/* ── DETAIL ── */
+.detail-header { padding: calc(14px + var(--safe-top)) 18px 10px; display:flex; align-items:center; gap:10px; }
+.detail-hero { margin: 0 16px 16px; padding: 22px 20px; display:flex; align-items:center; gap:18px; }
+.detail-ring-outer { position:relative; width:100px; height:100px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+.detail-ring-outer svg { position:absolute; inset:0; width:100%; height:100%; transform:rotate(-90deg); }
+.detail-ring-emoji { position:relative; z-index:2; width:72px; height:72px; display:flex; align-items:center; justify-content:center; font-size:34px; line-height:1; }
+.detail-info { flex:1; min-width:0; }
+.detail-name { font-size:24px; font-weight:600; line-height:1.1; }
+.detail-hours { font-size:30px; font-weight:300; margin-top:5px; background:var(--grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-variant-numeric:tabular-nums; }
+.detail-sub { font-size:13px; color:var(--text2); margin-top:3px; }
 
 /* ── TIMER ── */
-.timer-section {
-  margin: 0 16px 16px;
-  padding: 20px;
-  text-align: center;
-}
-.timer-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
-.timer-display {
-  font-family: var(--mono); font-size: 42px; font-weight: 500;
-  color: var(--text); letter-spacing: 1px; margin: 10px 0 18px;
-  transition: color 0.3s;
-}
-.timer-display.running {
-  background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-.timer-btns { display: flex; gap: 10px; justify-content: center; }
+.timer-section { margin: 0 16px 14px; padding: 20px; text-align:center; }
+.timer-label { font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:.1em; font-weight:500; }
+.timer-display { font-size:44px; font-weight:200; color:var(--text); letter-spacing:1px; margin:10px 0 18px; font-variant-numeric:tabular-nums; transition:color 0.3s; }
+.timer-display.running { background:var(--grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.timer-btns { display:flex; gap:10px; justify-content:center; }
 
 /* ── TABS ── */
-.tabs {
-  display: flex; gap: 0; margin: 0 16px 16px;
-  background: var(--bg2); border-radius: 50px; padding: 3px;
-}
-.tab-btn {
-  flex: 1; padding: 8px; background: none; border: none;
-  color: var(--text2); font-family: var(--sans); font-size: 13px; font-weight: 500;
-  cursor: pointer; border-radius: 50px; transition: all 0.2s;
-}
-.tab-btn.active { background: var(--glass); color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.tabs { display:flex; margin:0 16px 14px; background:var(--glass); border:1px solid var(--glass-border); border-radius:50px; padding:3px; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
+.tab-btn { flex:1; padding:8px; background:none; border:none; color:var(--text2); font-family:var(--sans); font-size:13px; font-weight:500; cursor:pointer; border-radius:50px; transition:all 0.22s; }
+.tab-btn.active { background:var(--glass-hi); color:var(--text); box-shadow:0 2px 10px rgba(120,80,200,0.12); }
 
-/* ── SECTION HEADER ── */
-.section-hd {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 20px 10px;
-}
-.section-hd h3 { font-size: 17px; font-weight: 600; }
+/* ── SECTION HDR ── */
+.section-hd { display:flex; align-items:center; justify-content:space-between; padding:0 20px 10px; }
+.section-hd h3 { font-size:17px; font-weight:600; }
 
 /* ── SESSION ITEM ── */
-.session-item {
-  margin: 0 16px 8px;
-  padding: 14px 16px;
-  cursor: pointer;
-  transition: transform 0.15s;
-}
-.session-item:active { transform: scale(0.98); }
-.session-row { display: flex; align-items: center; justify-content: space-between; }
-.session-dur { font-family: var(--mono); font-size: 16px; font-weight: 500; }
-.session-date { font-size: 12px; color: var(--text3); font-family: var(--mono); }
-.session-note { font-size: 13px; color: var(--text2); margin-top: 5px; line-height: 1.4; }
-.session-milestone {
-  display: inline-flex; align-items: center; gap: 4px;
-  margin-top: 6px;
-  background: linear-gradient(135deg, rgba(110,142,250,0.15), rgba(176,110,250,0.15));
-  color: var(--grad-start); font-size: 11px; padding: 3px 10px;
-  border-radius: 20px; font-family: var(--mono);
-}
-.session-undoc {
-  font-size: 12px; color: var(--text3); font-style: italic; margin-top: 3px;
-}
+.session-item { margin:0 16px 8px; padding:13px 16px; cursor:pointer; transition:transform 0.15s; }
+.session-item:active { transform:scale(0.98); }
+.session-row { display:flex; align-items:center; justify-content:space-between; }
+.session-dur { font-size:16px; font-weight:500; font-variant-numeric:tabular-nums; }
+.session-date { font-size:12px; color:var(--text3); }
+.session-note { font-size:13px; color:var(--text2); margin-top:5px; line-height:1.45; }
+.session-milestone { display:inline-flex; align-items:center; gap:4px; margin-top:6px; background:var(--grad-soft); color:var(--grad-a); font-size:11px; padding:3px 10px; border-radius:20px; font-weight:500; }
+.session-undoc { font-size:12px; color:var(--text3); font-style:italic; margin-top:3px; }
 
-/* ── MILESTONE ── */
-.milestone-item {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 12px 16px; margin: 0 16px 8px;
-}
-.milestone-check {
-  width: 22px; height: 22px; border-radius: 50%;
-  border: 2px solid var(--text3); flex-shrink: 0; margin-top: 1px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
-}
-.milestone-check.done {
-  background: var(--grad); border-color: transparent;
-  transform: scale(1.1);
-  animation: milestoneCheck 0.3s cubic-bezier(0.34,1.56,0.64,1);
-}
-@keyframes milestoneCheck { 0%{transform:scale(0.8)} 60%{transform:scale(1.2)} 100%{transform:scale(1.1)} }
-.milestone-check.done::after { content: '✓'; color: #fff; font-size: 11px; font-weight: 700; }
-.milestone-text { flex: 1; font-size: 14px; line-height: 1.5; transition: color 0.2s; }
-.milestone-text.done { color: var(--text3); text-decoration: line-through; }
+/* ── MILESTONES ── */
+.milestone-item { display:flex; align-items:flex-start; gap:12px; padding:12px 16px; margin:0 16px 8px; }
+.m-check { width:22px; height:22px; border-radius:50%; border:2px solid var(--text3); flex-shrink:0; margin-top:1px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+.m-check.done { background:var(--grad); border-color:transparent; transform:scale(1.1); }
+.m-check.done::after { content:'✓'; color:#fff; font-size:11px; font-weight:700; }
+.m-text { flex:1; font-size:14px; line-height:1.5; transition:color 0.2s; }
+.m-text.done { color:var(--text3); text-decoration:line-through; }
 
-/* ── RESOURCE ── */
-.resource-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 16px; margin: 0 16px 8px;
-  transition: transform 0.15s;
-}
-.resource-item:active { transform: scale(0.98); }
-.resource-icon { font-size: 20px; flex-shrink: 0; }
-.resource-name { font-size: 14px; }
-.resource-type { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 2px; }
+/* ── RESOURCES ── */
+.resource-item { display:flex; align-items:center; gap:12px; padding:12px 16px; margin:0 16px 8px; transition:transform 0.15s; }
+.resource-item:active { transform:scale(0.98); }
 
 /* ── LIBRARY ── */
-.library-grid {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 10px; padding: 0 16px;
-}
-.lib-card {
-  padding: 18px 14px; cursor: pointer;
-  transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1);
-  text-align: center;
-}
-.lib-card:active { transform: scale(0.95); }
-.lib-card.owned { opacity: 0.4; pointer-events: none; }
-.lib-icon { font-size: 34px; margin-bottom: 8px; }
-.lib-name { font-size: 15px; font-weight: 600; }
-.lib-desc { font-size: 11px; color: var(--text2); margin-top: 4px; line-height: 1.4; }
+.library-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 16px; }
+.lib-card { padding:18px 14px; cursor:pointer; text-align:center; transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1); }
+.lib-card:active { transform:scale(0.94); }
+.lib-card.owned { opacity:0.38; pointer-events:none; }
+.lib-icon { font-size:34px; margin-bottom:8px; }
+.lib-name { font-size:15px; font-weight:600; }
+.lib-desc { font-size:11px; color:var(--text2); margin-top:4px; line-height:1.45; }
 
 /* ── STATS ── */
-.stats-card { margin: 0 16px 12px; padding: 18px; }
-.stats-row {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 9px 0; border-bottom: 1px solid var(--border);
-}
-.stats-row:last-child { border-bottom: none; }
-.stats-label { font-size: 13px; color: var(--text2); }
-.stats-value { font-family: var(--mono); font-size: 15px; font-weight: 500; }
+.stats-card { margin:0 16px 12px; padding:18px; }
+.stats-row { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid var(--border); }
+.stats-row:last-child { border-bottom:none; }
+.stats-label { font-size:13px; color:var(--text2); }
+.stats-value { font-size:15px; font-weight:500; font-variant-numeric:tabular-nums; }
 
-/* ── MODAL / SHEET ── */
-.overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.3);
-  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-  z-index: 200; align-items: flex-end; justify-content: center;
-}
-.overlay.open { display: flex; }
-.sheet {
-  background: var(--nav-bg);
-  backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
-  border: 1px solid var(--glass-border);
-  border-radius: 28px 28px 0 0;
-  padding: 20px 20px calc(20px + var(--safe-bot));
-  width: 100%; max-width: 480px;
-  max-height: 90dvh; overflow-y: auto;
-  animation: slideUp 0.3s cubic-bezier(0.34,1.2,0.64,1);
-}
-@keyframes slideUp { from{transform:translateY(80px);opacity:0} to{transform:translateY(0);opacity:1} }
-.sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
-.sheet-title { font-size: 20px; font-weight: 600; margin-bottom: 18px; }
+/* ── SHEET ── */
+.overlay { display:none; position:fixed; inset:0; background:rgba(60,20,100,0.18); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); z-index:200; align-items:flex-end; justify-content:center; }
+.overlay.open { display:flex; }
+.sheet { background:var(--nav-bg); backdrop-filter:blur(36px); -webkit-backdrop-filter:blur(36px); border:1px solid var(--glass-border); border-radius:28px 28px 0 0; padding:20px 20px calc(22px + var(--safe-bot)); width:100%; max-width:480px; max-height:90dvh; overflow-y:auto; animation:sheetUp 0.32s cubic-bezier(0.34,1.2,0.64,1); }
+@keyframes sheetUp { from{transform:translateY(90px);opacity:0} to{transform:translateY(0);opacity:1} }
+.sheet-handle { width:36px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 20px; }
+.sheet-title { font-size:20px; font-weight:600; margin-bottom:18px; }
 
 /* ── FORM ── */
-.field { margin-bottom: 14px; }
-.field label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 6px; font-weight: 500; }
-.field input, .field textarea, .field select {
-  width: 100%; background: var(--bg2);
-  border: 1.5px solid transparent; border-radius: var(--r-sm);
-  color: var(--text); font-family: var(--sans); font-size: 15px;
-  padding: 12px 14px; outline: none; transition: border-color 0.2s;
-}
-.field input:focus, .field textarea:focus, .field select:focus {
-  border-color: var(--grad-start);
-}
-.field textarea { resize: none; min-height: 80px; }
-.field select option { background: var(--bg2); }
+.field { margin-bottom:14px; }
+.field label { display:block; font-size:12px; color:var(--text2); margin-bottom:6px; font-weight:500; }
+.field input,.field textarea,.field select { width:100%; background:var(--glass); border:1.5px solid var(--glass-border); border-radius:var(--r-sm); color:var(--text); font-family:var(--sans); font-size:15px; padding:12px 14px; outline:none; transition:border-color 0.2s; backdrop-filter:blur(10px); }
+.field input:focus,.field textarea:focus,.field select:focus { border-color:var(--grad-a); }
+.field textarea { resize:none; min-height:80px; }
+.toggle-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; margin-bottom:14px; }
+.toggle-row label { font-size:15px; color:var(--text); font-weight:500; }
+.toggle { width:50px; height:28px; background:var(--glass); border:1px solid var(--glass-border); border-radius:14px; cursor:pointer; position:relative; transition:background 0.3s; flex-shrink:0; }
+.toggle.on { background:var(--grad-a); border-color:transparent; }
+.toggle::after { content:''; position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%; background:#fff; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); box-shadow:0 1px 4px rgba(0,0,0,0.2); }
+.toggle.on::after { transform:translateX(22px); }
 
-/* ── TOGGLE ROW ── */
-.toggle-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 0; margin-bottom: 14px;
+/* ── ZOOM / SEGMENT ANIMATION ── */
+#seg-overlay {
+  display:none; position:fixed; inset:0; z-index:500;
+  pointer-events:none; overflow:hidden;
 }
-.toggle-row label { font-size: 15px; color: var(--text); font-weight: 500; }
-.toggle {
-  width: 50px; height: 28px; background: var(--bg2);
-  border-radius: 14px; border: none; cursor: pointer;
-  position: relative; transition: background 0.3s; flex-shrink: 0;
+#seg-overlay.active { display:block; }
+.seg-wrap {
+  position:absolute;
+  transform-origin: center center;
+  animation: segZoom 2.6s cubic-bezier(0.4,0,0.2,1) forwards;
 }
-.toggle.on { background: var(--grad-start); }
-.toggle::after {
-  content: ''; position: absolute; top: 3px; left: 3px;
-  width: 22px; height: 22px; border-radius: 50%; background: #fff;
-  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-}
-.toggle.on::after { transform: translateX(22px); }
-
-/* ── ZOOM ANIMATION OVERLAY ── */
-#zoom-overlay {
-  display: none; position: fixed; inset: 0; z-index: 500;
-  align-items: center; justify-content: center;
-  background: transparent;
-  pointer-events: none;
-}
-#zoom-overlay.active { display: flex; }
-.zoom-ring-container {
-  position: absolute;
-  animation: zoomInOut 2.2s cubic-bezier(0.4,0,0.2,1) forwards;
-}
-@keyframes zoomInOut {
+@keyframes segZoom {
   0%   { transform: scale(1);   opacity: 0; }
-  15%  { transform: scale(1);   opacity: 1; }
-  40%  { transform: scale(5);   opacity: 1; }
-  70%  { transform: scale(5);   opacity: 1; }
-  90%  { transform: scale(1);   opacity: 1; }
+  12%  { transform: scale(1);   opacity: 1; }
+  38%  { transform: scale(6.5); opacity: 1; }
+  65%  { transform: scale(6.5); opacity: 1; }
+  88%  { transform: scale(1);   opacity: 1; }
   100% { transform: scale(1);   opacity: 0; }
 }
-.zoom-ring-bg { fill: none; stroke: var(--bg2); stroke-width: 6; }
-.zoom-ring-old { fill: none; stroke: #D1D5DB; stroke-width: 6; stroke-linecap: round; }
-.zoom-ring-new { fill: none; stroke: url(#zoomGrad); stroke-width: 6; stroke-linecap: round; }
-.zoom-label {
-  position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%);
-  font-family: var(--mono); font-size: 11px; color: var(--grad-start);
-  white-space: nowrap; opacity: 0;
-  animation: labelFade 2.2s forwards;
+.seg-ring-bg   { fill:none; stroke:rgba(180,160,220,0.22); stroke-width:5; }
+.seg-ring-base { fill:none; stroke:rgba(180,160,220,0.4);  stroke-width:5; stroke-linecap:round; }
+.seg-ring-new  { fill:none; stroke:url(#segGrad);           stroke-width:5.5; stroke-linecap:round; }
+.seg-pill {
+  position:absolute; left:50%; transform:translateX(-50%);
+  bottom:-32px;
+  background:var(--grad); color:#fff;
+  font-size:9px; font-weight:600; padding:3px 10px; border-radius:20px;
+  white-space:nowrap; letter-spacing:0.04em;
+  opacity:0;
+  animation: pillFade 2.6s forwards;
 }
-@keyframes labelFade {
-  0%,20%{opacity:0} 40%,75%{opacity:1} 90%,100%{opacity:0}
-}
+@keyframes pillFade { 0%,15%{opacity:0} 35%,70%{opacity:1} 90%,100%{opacity:0} }
 
 /* ── TOAST ── */
-.toast {
-  position: fixed; top: calc(20px + var(--safe-top)); left: 50%;
-  transform: translateX(-50%) translateY(-80px);
-  background: var(--glass); color: var(--text);
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  padding: 10px 20px; border-radius: 50px;
-  font-size: 13px; font-weight: 500;
-  z-index: 999; transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
-  white-space: nowrap;
-}
-.toast.show { transform: translateX(-50%) translateY(0); }
+.toast { position:fixed; top:calc(20px + var(--safe-top)); left:50%; transform:translateX(-50%) translateY(-90px); background:var(--glass); color:var(--text); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid var(--glass-border); box-shadow:var(--glass-shadow); padding:10px 22px; border-radius:50px; font-size:13px; font-weight:500; z-index:999; transition:transform 0.38s cubic-bezier(0.34,1.56,0.64,1); white-space:nowrap; }
+.toast.show { transform:translateX(-50%) translateY(0); }
 
-.spacer { height: 12px; }
-.pad-h { padding: 0 16px; }
-.divider { height: 1px; background: var(--border); margin: 12px 20px; }
+.spacer { height:12px; }
+.pad-h  { padding:0 16px; }
 </style>
 </head>
 <body>
 
-<!-- SVG DEFS (gradients) -->
-<svg width="0" height="0" style="position:absolute">
+<!-- BG -->
+<div class="bg-canvas">
+  <div class="bg-blob"></div>
+  <div class="bg-blob"></div>
+  <div class="bg-blob"></div>
+  <div class="bg-blob"></div>
+</div>
+
+<!-- SVG DEFS -->
+<svg width="0" height="0" style="position:absolute;overflow:hidden">
   <defs>
     <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#6E8EFA"/>
-      <stop offset="100%" stop-color="#B06EFA"/>
+      <stop offset="0%"   stop-color="#7B6EFA"/>
+      <stop offset="60%"  stop-color="#D06EDE"/>
+      <stop offset="100%" stop-color="#6EBFFA"/>
     </linearGradient>
-    <linearGradient id="zoomGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#6E8EFA"/>
-      <stop offset="100%" stop-color="#B06EFA"/>
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#7B6EFA"/>
+      <stop offset="100%" stop-color="#D06EDE"/>
+    </linearGradient>
+    <linearGradient id="segGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#7B6EFA"/>
+      <stop offset="60%"  stop-color="#D06EDE"/>
+      <stop offset="100%" stop-color="#6EBFFA"/>
     </linearGradient>
   </defs>
 </svg>
 
 <div id="app">
 
-  <!-- ══ HOME ══ -->
+  <!-- HOME -->
   <div id="screen-home" class="screen active">
     <div class="header">
-      <div class="logo"><span class="l1">1</span><span class="l2">0</span><span class="l3">0</span></div>
+      <div class="logo">
+        <span class="logo-one">1</span>
+        <div class="logo-circle"></div>
+        <svg class="logo-ring-svg" viewBox="0 0 24 24">
+          <circle class="logo-ring-bg" cx="12" cy="12" r="9"/>
+          <circle class="logo-ring-fill" cx="12" cy="12" r="9"/>
+        </svg>
+      </div>
       <div class="header-actions">
-        <button class="btn btn-icon btn-sm" onclick="showArchived()" title="Archived">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg>
-        </button>
-        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme"></button>
+        <button class="btn-icon btn" onclick="showArchived()" style="width:34px;height:34px;font-size:14px">⟳</button>
+        <button class="theme-toggle" onclick="toggleTheme()"></button>
       </div>
     </div>
     <div class="skills-grid" id="skill-list"></div>
     <div id="empty-home" class="empty" style="display:none">
       <div class="empty-icon">✦</div>
       <h3>Nothing here yet</h3>
-      <p>Head to Library to add your first skill and start your hundred hours.</p>
+      <p>Head to Library to add your first skill and begin your hundred hours.</p>
     </div>
   </div>
 
-  <!-- ══ DETAIL ══ -->
+  <!-- DETAIL -->
   <div id="screen-detail" class="screen">
     <div class="detail-header">
       <button class="btn btn-icon" onclick="goHome()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="17" height="17"><path d="M15 18l-6-6 6-6"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16"><path d="M15 18l-6-6 6-6"/></svg>
       </button>
       <div style="flex:1"></div>
       <button class="btn btn-sm btn-outline" id="detail-archive-btn" onclick="toggleArchiveSkill()" style="margin-right:8px">Archive</button>
       <button class="btn btn-sm btn-outline" onclick="openEditGoal()">Goal</button>
     </div>
-
     <div class="detail-hero glass-card">
-      <div class="detail-ring-wrap">
+      <div class="detail-ring-outer" id="detail-ring-anchor">
         <svg viewBox="0 0 100 100">
           <circle class="ring-bg" cx="50" cy="50" r="42"/>
-          <circle id="detail-ring" class="ring-fill" cx="50" cy="50" r="42"
-            stroke-dasharray="263.89" stroke-dashoffset="263.89"/>
+          <circle id="detail-ring" class="ring-fill" cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="263.89"/>
         </svg>
-        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:32px" id="detail-emoji"></div>
+        <div class="detail-ring-emoji" id="detail-emoji"></div>
       </div>
       <div class="detail-info">
         <div class="detail-name" id="detail-name"></div>
-        <div class="detail-hours"><span id="detail-hours-num">0</span><span style="font-size:16px"> hrs</span></div>
-        <div class="detail-hours-sub" id="detail-goal-txt"></div>
+        <div class="detail-hours"><span id="detail-hours-num">0</span><span style="font-size:16px;font-weight:400"> hrs</span></div>
+        <div class="detail-sub" id="detail-goal-txt"></div>
       </div>
     </div>
-
     <div class="timer-section glass-card">
       <div class="timer-label">Session timer</div>
       <div class="timer-display" id="timer-display">00:00:00</div>
@@ -571,592 +500,438 @@ body {
         <button class="btn btn-secondary" onclick="openManualLog()">+ Manual</button>
       </div>
     </div>
-
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('sessions',this)">Sessions</button>
       <button class="tab-btn" onclick="switchTab('milestones',this)">Milestones</button>
       <button class="tab-btn" onclick="switchTab('resources',this)">Resources</button>
     </div>
-
-    <div id="tab-sessions">
-      <div class="section-hd"><h3>Sessions</h3></div>
-      <div id="sessions-list"></div>
-    </div>
-    <div id="tab-milestones" style="display:none">
-      <div class="section-hd"><h3>Milestones</h3><button class="btn btn-sm btn-outline" onclick="openAddMilestone()">+ Add</button></div>
-      <div id="milestones-list"></div>
-    </div>
-    <div id="tab-resources" style="display:none">
-      <div class="section-hd"><h3>Resources</h3><button class="btn btn-sm btn-outline" onclick="openAddResource()">+ Add</button></div>
-      <div id="resources-list"></div>
-    </div>
+    <div id="tab-sessions"><div class="section-hd"><h3>Sessions</h3></div><div id="sessions-list"></div></div>
+    <div id="tab-milestones" style="display:none"><div class="section-hd"><h3>Milestones</h3><button class="btn btn-sm btn-outline" onclick="openAddMilestone()">+ Add</button></div><div id="milestones-list"></div></div>
+    <div id="tab-resources"  style="display:none"><div class="section-hd"><h3>Resources</h3><button class="btn btn-sm btn-outline" onclick="openAddResource()">+ Add</button></div><div id="resources-list"></div></div>
   </div>
 
-  <!-- ══ LIBRARY ══ -->
+  <!-- LIBRARY -->
   <div id="screen-library" class="screen">
     <div class="header">
-      <div class="logo"><span class="l1">1</span><span class="l2">0</span><span class="l3">0</span></div>
+      <div class="logo"><span class="logo-one">1</span><div class="logo-circle"></div><svg class="logo-ring-svg" viewBox="0 0 24 24"><circle class="logo-ring-bg" cx="12" cy="12" r="9"/><circle class="logo-ring-fill" cx="12" cy="12" r="9"/></svg></div>
     </div>
     <div class="library-grid" id="library-grid"></div>
     <div class="spacer"></div>
-    <div class="pad-h">
-      <button class="btn btn-outline btn-full" onclick="openCustomSkill()">+ Create custom skill</button>
-    </div>
+    <div class="pad-h"><button class="btn btn-outline btn-full" onclick="openCustomSkill()">+ Create custom skill</button></div>
     <div class="spacer"></div>
   </div>
 
-  <!-- ══ STATS ══ -->
+  <!-- STATS -->
   <div id="screen-stats" class="screen">
     <div class="header">
-      <div class="logo"><span class="l1">1</span><span class="l2">0</span><span class="l3">0</span></div>
+      <div class="logo"><span class="logo-one">1</span><div class="logo-circle"></div><svg class="logo-ring-svg" viewBox="0 0 24 24"><circle class="logo-ring-bg" cx="12" cy="12" r="9"/><circle class="logo-ring-fill" cx="12" cy="12" r="9"/></svg></div>
     </div>
     <div id="stats-content"></div>
   </div>
-
 </div>
 
-<!-- ══ NAV ══ -->
+<!-- NAV -->
 <nav class="nav">
   <button class="nav-btn active" id="nav-home" onclick="navTo('home')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
-    Skills
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>Skills
   </button>
   <button class="nav-btn" id="nav-library" onclick="navTo('library')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-    Library
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Library
   </button>
   <button class="nav-btn" id="nav-stats" onclick="navTo('stats')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-    Stats
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Stats
   </button>
 </nav>
 
-<!-- ══ OVERLAYS ══ -->
-
+<!-- OVERLAYS -->
 <div class="overlay" id="overlay-lib-add">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title" id="lib-add-title"></div>
-    <p style="color:var(--text2);font-size:14px;margin-bottom:18px" id="lib-add-desc"></p>
-    <div class="field"><label>Goal (hours)</label><input type="number" id="lib-goal-input" value="100" min="1"></div>
-    <button class="btn btn-primary btn-full" onclick="confirmAddFromLib()">Add to my skills</button>
-    <div style="height:10px"></div>
-    <button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-lib-add')">Cancel</button>
-  </div>
+  <div class="sheet"><div class="sheet-handle"></div><div class="sheet-title" id="lib-add-title"></div>
+  <p style="color:var(--text2);font-size:14px;margin-bottom:18px" id="lib-add-desc"></p>
+  <div class="field"><label>Goal (hours)</label><input type="number" id="lib-goal-input" value="100" min="1"></div>
+  <button class="btn btn-primary btn-full" onclick="confirmAddFromLib()">Add to my skills</button>
+  <div style="height:10px"></div><button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-lib-add')">Cancel</button></div>
 </div>
 
 <div class="overlay" id="overlay-custom">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Create skill</div>
-    <div class="field"><label>Name</label><input type="text" id="custom-name" placeholder="e.g. Origami"></div>
-    <div class="field"><label>Emoji</label><input type="text" id="custom-emoji" placeholder="✦" maxlength="2"></div>
-    <div class="field"><label>Goal (hours)</label><input type="number" id="custom-goal" value="100" min="1"></div>
-    <button class="btn btn-primary btn-full" onclick="confirmCustomSkill()">Create</button>
-    <div style="height:10px"></div>
-    <button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-custom')">Cancel</button>
-  </div>
+  <div class="sheet"><div class="sheet-handle"></div><div class="sheet-title">Create skill</div>
+  <div class="field"><label>Name</label><input type="text" id="custom-name" placeholder="e.g. Origami"></div>
+  <div class="field"><label>Emoji</label><input type="text" id="custom-emoji" placeholder="✦" maxlength="2"></div>
+  <div class="field"><label>Goal (hours)</label><input type="number" id="custom-goal" value="100" min="1"></div>
+  <button class="btn btn-primary btn-full" onclick="confirmCustomSkill()">Create</button>
+  <div style="height:10px"></div><button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-custom')">Cancel</button></div>
 </div>
 
 <div class="overlay" id="overlay-manual">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Log hours</div>
-    <div class="toggle-row">
-      <label id="log-type-label">Documented session</label>
-      <button class="toggle on" id="doc-toggle" onclick="toggleDocMode()"></button>
-    </div>
-    <div id="doc-fields">
-      <div class="field"><label>Duration (minutes)</label><input type="number" id="manual-dur" placeholder="e.g. 45" min="1"></div>
-      <div class="field"><label>Date (optional)</label><input type="date" id="manual-date"></div>
-      <div class="field"><label>Note (optional)</label><textarea id="manual-note" placeholder="What did you work on?"></textarea></div>
-      <div class="field"><label>Milestone reached? (optional)</label><input type="text" id="manual-milestone" placeholder="e.g. First clean waterfall cut"></div>
-    </div>
-    <div id="undoc-fields" style="display:none">
-      <div class="field"><label>Hours to add</label><input type="number" id="undoc-hours" placeholder="e.g. 3.5" min="0.1" step="0.1"></div>
-      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.5">These hours count toward your goal but won't be listed as a specific session.</p>
-    </div>
-    <button class="btn btn-primary btn-full" onclick="confirmManualLog()">Save</button>
-    <div style="height:10px"></div>
-    <button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-manual')">Cancel</button>
+  <div class="sheet"><div class="sheet-handle"></div><div class="sheet-title">Log hours</div>
+  <div class="toggle-row"><label id="log-type-label">Documented session</label><button class="toggle on" id="doc-toggle" onclick="toggleDocMode()"></button></div>
+  <div id="doc-fields">
+    <div class="field"><label>Duration (minutes)</label><input type="number" id="manual-dur" placeholder="e.g. 45" min="1"></div>
+    <div class="field"><label>Date (optional)</label><input type="date" id="manual-date"></div>
+    <div class="field"><label>Note (optional)</label><textarea id="manual-note" placeholder="What did you work on?"></textarea></div>
+    <div class="field"><label>Milestone reached? (optional)</label><input type="text" id="manual-milestone" placeholder="e.g. First clean waterfall cut"></div>
   </div>
+  <div id="undoc-fields" style="display:none">
+    <div class="field"><label>Hours to add</label><input type="number" id="undoc-hours" placeholder="e.g. 3.5" min="0.1" step="0.1"></div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.5">These hours count toward your goal but won't appear as a specific session.</p>
+  </div>
+  <button class="btn btn-primary btn-full" onclick="confirmManualLog()">Save</button>
+  <div style="height:10px"></div><button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-manual')">Cancel</button></div>
 </div>
 
 <div class="overlay" id="overlay-session">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Session</div>
-    <div id="session-detail-content"></div>
-    <div class="field" style="margin-top:12px"><label>Note</label><textarea id="session-edit-note" placeholder="What did you accomplish?"></textarea></div>
-    <div class="field"><label>Milestone reached?</label><input type="text" id="session-edit-milestone" placeholder="e.g. Played first full song"></div>
-    <button class="btn btn-primary btn-full" onclick="saveSessionNote()">Save</button>
-    <div style="height:10px"></div>
-    <button class="btn btn-danger btn-full" onclick="deleteSession()">Delete session</button>
-    <div style="height:10px"></div>
-    <button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-session')">Cancel</button>
-  </div>
+  <div class="sheet"><div class="sheet-handle"></div><div class="sheet-title">Session</div>
+  <div id="session-detail-content"></div>
+  <div class="field" style="margin-top:12px"><label>Note</label><textarea id="session-edit-note" placeholder="What did you accomplish?"></textarea></div>
+  <div class="field"><label>Milestone reached?</label><input type="text" id="session-edit-milestone" placeholder="e.g. Played first full song"></div>
+  <button class="btn btn-primary btn-full" onclick="saveSessionNote()">Save</button>
+  <div style="height:10px"></div><button class="btn btn-danger btn-full" onclick="deleteSession()">Delete session</button>
+  <div style="height:10px"></div><button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-session')">Cancel</button></div>
 </div>
 
 <div class="overlay" id="overlay-milestone">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Add milestone</div>
-    <div class="field"><label>Milestone</label><input type="text" id="milestone-input" placeholder="e.g. Complete first chord progression"></div>
-    <button class="btn btn-primary btn-full" onclick="confirmAddMilestone()">Add</button>
-    <div style="height:10px"></div>
-    <button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-milestone')">Cancel</button>
-  </div>
+  <div class="sheet"><div class="sheet-handle"></div><div class="sheet-title">Add milestone</div>
+  <div class="field"><label>Milestone</label><input type="text" id="milestone-input" placeholder="e.g. Complete first chord progression"></div>
+  <button class="btn btn-primary btn-full" onclick="confirmAddMilestone()">Add</button>
+  <div style="height:10px"></div><button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-milestone')">Cancel</button></div>
 </div>
 
 <div class="overlay" id="overlay-resource">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Add resource</div>
-    <div class="field"><label>Name</label><input type="text" id="resource-name" placeholder="e.g. Justin Guitar"></div>
-    <div class="field"><label>Type</label>
-      <select id="resource-type">
-        <option value="video">Video / YouTube</option>
-        <option value="book">Book</option>
-        <option value="website">Website</option>
-        <option value="course">Course</option>
-        <option value="community">Community</option>
-        <option value="other">Other</option>
-      </select>
-    </div>
-    <div class="field"><label>URL (optional)</label><input type="url" id="resource-url" placeholder="https://..."></div>
-    <button class="btn btn-primary btn-full" onclick="confirmAddResource()">Add</button>
-    <div style="height:10px"></div>
-    <button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-resource')">Cancel</button>
-  </div>
+  <div class="sheet"><div class="sheet-handle"></div><div class="sheet-title">Add resource</div>
+  <div class="field"><label>Name</label><input type="text" id="resource-name" placeholder="e.g. Justin Guitar"></div>
+  <div class="field"><label>Type</label><select id="resource-type"><option value="video">Video / YouTube</option><option value="book">Book</option><option value="website">Website</option><option value="course">Course</option><option value="community">Community</option><option value="other">Other</option></select></div>
+  <div class="field"><label>URL (optional)</label><input type="url" id="resource-url" placeholder="https://..."></div>
+  <button class="btn btn-primary btn-full" onclick="confirmAddResource()">Add</button>
+  <div style="height:10px"></div><button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-resource')">Cancel</button></div>
 </div>
 
 <div class="overlay" id="overlay-goal">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Edit goal</div>
-    <div class="field"><label>Goal (hours)</label><input type="number" id="goal-input" min="1"></div>
-    <button class="btn btn-primary btn-full" onclick="confirmEditGoal()">Save</button>
-    <div style="height:10px"></div>
-    <button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-goal')">Cancel</button>
-  </div>
+  <div class="sheet"><div class="sheet-handle"></div><div class="sheet-title">Edit goal</div>
+  <div class="field"><label>Goal (hours)</label><input type="number" id="goal-input" min="1"></div>
+  <button class="btn btn-primary btn-full" onclick="confirmEditGoal()">Save</button>
+  <div style="height:10px"></div><button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-goal')">Cancel</button></div>
 </div>
 
 <div class="overlay" id="overlay-archived">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Archived skills</div>
-    <div id="archived-list"></div>
-    <div style="height:10px"></div>
-    <button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-archived')">Close</button>
-  </div>
+  <div class="sheet"><div class="sheet-handle"></div><div class="sheet-title">Archived skills</div>
+  <div id="archived-list"></div>
+  <div style="height:10px"></div><button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-archived')">Close</button></div>
 </div>
 
-<!-- ZOOM OVERLAY -->
-<div id="zoom-overlay">
-  <div class="zoom-ring-container" id="zoom-ring-container">
-    <svg width="100" height="100" viewBox="0 0 100 100" style="transform:rotate(-90deg)">
-      <circle class="zoom-ring-bg" cx="50" cy="50" r="42"/>
-      <circle class="zoom-ring-old" id="zoom-old" cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="263.89"/>
-      <circle class="zoom-ring-new" id="zoom-new" cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="263.89"/>
+<!-- SEGMENT ZOOM OVERLAY -->
+<div id="seg-overlay">
+  <div class="seg-wrap" id="seg-wrap">
+    <svg id="seg-svg" width="100" height="100" viewBox="0 0 100 100" style="transform:rotate(-90deg);overflow:visible">
+      <circle class="seg-ring-bg"   cx="50" cy="50" r="42"/>
+      <circle class="seg-ring-base" id="seg-base" cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="263.89"/>
+      <circle class="seg-ring-new"  id="seg-new"  cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="263.89"/>
     </svg>
-    <div class="zoom-label" id="zoom-label"></div>
+    <div class="seg-pill" id="seg-pill"></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ══════════════════════════════════════════
-//  LIBRARY DATA
-// ══════════════════════════════════════════
+// ══ LIBRARY ══
 const LIBRARY = [
-  {
-    id:'huaqie', name:'花切', icon:'🃏', desc:'Card flourishing & cardistry',
-    defaultMilestones:['Complete a clean Charlier cut','Perform a one-handed waterfall','Learn the Sybil cut','Execute a smooth spring flourish','Create your first original combo'],
-    defaultResources:[{name:'Cardistry-Con on YouTube',type:'video',url:'https://youtube.com/@CardistryConOfficial'},{name:'Huron Low – beginner tutorials',type:'video',url:'https://youtube.com/@HuronLow'},{name:'Theory11 flourish tutorials',type:'website',url:'https://www.theory11.com'}]
-  },
-  {
-    id:'guitar', name:'Guitar', icon:'🎸', desc:'Acoustic or electric guitar',
-    defaultMilestones:['Learn 3 open chords (G, C, D)','Switch chords without pausing','Play your first full song','Learn a basic fingerpicking pattern','Play a 12-bar blues progression'],
-    defaultResources:[{name:'Justin Guitar – Beginner Course',type:'website',url:'https://www.justinguitar.com'},{name:'Fender Play',type:'course',url:'https://www.fender.com/play'},{name:'r/guitarlessons',type:'community',url:'https://reddit.com/r/guitarlessons'}]
-  },
-  {
-    id:'drawing', name:'Drawing', icon:'✏️', desc:'Sketching & illustration',
-    defaultMilestones:['Draw a recognizable face','Complete a still-life from observation','Master basic perspective','Finish a full illustration'],
-    defaultResources:[{name:'Ctrl+Paint – free fundamentals',type:'website',url:'https://www.ctrlpaint.com'},{name:'"Drawing on the Right Side of the Brain"',type:'book',url:''}]
-  },
-  {
-    id:'chess', name:'Chess', icon:'♟️', desc:'Strategy & tactics',
-    defaultMilestones:['Learn all piece movements','Complete a game with a proper opening','Solve 50 tactics puzzles','Win a game in under 30 moves'],
-    defaultResources:[{name:'Chess.com lessons',type:'website',url:'https://www.chess.com'},{name:'Lichess (free)',type:'website',url:'https://lichess.org'}]
-  },
-  {
-    id:'language', name:'Language', icon:'💬', desc:'Learning a new language',
-    defaultMilestones:['Learn 100 core vocabulary words','Hold a 1-minute conversation','Understand a short native podcast','Read a children\'s book'],
-    defaultResources:[{name:'Anki – spaced repetition',type:'website',url:'https://apps.ankiweb.net'},{name:'italki – conversation practice',type:'website',url:'https://www.italki.com'}]
-  },
-  {
-    id:'juggling', name:'Juggling', icon:'🤹', desc:'Object manipulation & flow',
-    defaultMilestones:['Juggle 3 balls for 10 seconds','Juggle for 1 minute continuously','Learn the cascade clean','Add a 4th object'],
-    defaultResources:[{name:'Juggling Edge tutorials',type:'website',url:'https://www.jugglingedge.com'}]
-  },
-  {
-    id:'coding', name:'Coding', icon:'💻', desc:'Programming a new language',
-    defaultMilestones:['Write a working Hello World','Build a small project','Understand basic data structures','Complete a coding challenge'],
-    defaultResources:[{name:'freeCodeCamp',type:'website',url:'https://www.freecodecamp.org'},{name:'The Odin Project',type:'course',url:'https://www.theodinproject.com'}]
-  },
-  {
-    id:'piano', name:'Piano', icon:'🎹', desc:'Piano or keyboard',
-    defaultMilestones:['Play a C major scale','Coordinate both hands','Play a full beginner piece from memory','Sight-read a simple melody'],
-    defaultResources:[{name:'Simply Piano',type:'course',url:'https://www.joytunes.com/simply-piano'},{name:'Flowkey',type:'course',url:'https://www.flowkey.com'}]
-  },
+  {id:'huaqie',name:'花切',icon:'🃏',desc:'Card flourishing & cardistry',
+   defaultMilestones:['Complete a clean Charlier cut','Perform a one-handed waterfall','Learn the Sybil cut','Execute a smooth spring flourish','Create your first original combo'],
+   defaultResources:[{name:'Cardistry-Con on YouTube',type:'video',url:'https://youtube.com/@CardistryConOfficial'},{name:'Huron Low – beginner tutorials',type:'video',url:'https://youtube.com/@HuronLow'},{name:'Theory11 flourish tutorials',type:'website',url:'https://www.theory11.com'}]},
+  {id:'guitar',name:'Guitar',icon:'🎸',desc:'Acoustic or electric guitar',
+   defaultMilestones:['Learn 3 open chords (G, C, D)','Switch chords without pausing','Play your first full song','Learn a basic fingerpicking pattern','Play a 12-bar blues progression'],
+   defaultResources:[{name:'Justin Guitar – Beginner Course',type:'website',url:'https://www.justinguitar.com'},{name:'Fender Play',type:'course',url:'https://www.fender.com/play'},{name:'r/guitarlessons',type:'community',url:'https://reddit.com/r/guitarlessons'}]},
+  {id:'drawing',name:'Drawing',icon:'✏️',desc:'Sketching & illustration',
+   defaultMilestones:['Draw a recognizable face','Complete a still-life from observation','Master basic perspective','Finish a full illustration'],
+   defaultResources:[{name:'Ctrl+Paint – free fundamentals',type:'website',url:'https://www.ctrlpaint.com'},{name:'"Drawing on the Right Side of the Brain"',type:'book',url:''}]},
+  {id:'chess',name:'Chess',icon:'♟️',desc:'Strategy & tactics',
+   defaultMilestones:['Learn all piece movements','Complete a game with a proper opening','Solve 50 tactics puzzles','Win a game in under 30 moves'],
+   defaultResources:[{name:'Chess.com',type:'website',url:'https://www.chess.com'},{name:'Lichess (free)',type:'website',url:'https://lichess.org'}]},
+  {id:'language',name:'Language',icon:'💬',desc:'Learning a new language',
+   defaultMilestones:['Learn 100 core vocabulary words','Hold a 1-minute conversation','Understand a short native podcast','Read a children\'s book'],
+   defaultResources:[{name:'Anki – spaced repetition',type:'website',url:'https://apps.ankiweb.net'},{name:'italki – conversation practice',type:'website',url:'https://www.italki.com'}]},
+  {id:'juggling',name:'Juggling',icon:'🤹',desc:'Object manipulation & flow',
+   defaultMilestones:['Juggle 3 balls for 10 seconds','Juggle for 1 minute continuously','Learn the cascade clean','Add a 4th object'],
+   defaultResources:[{name:'Juggling Edge tutorials',type:'website',url:'https://www.jugglingedge.com'}]},
+  {id:'coding',name:'Coding',icon:'💻',desc:'Programming a new language',
+   defaultMilestones:['Write a working Hello World','Build a small project','Understand basic data structures','Complete a coding challenge'],
+   defaultResources:[{name:'freeCodeCamp',type:'website',url:'https://www.freecodecamp.org'},{name:'The Odin Project',type:'course',url:'https://www.theodinproject.com'}]},
+  {id:'piano',name:'Piano',icon:'🎹',desc:'Piano or keyboard',
+   defaultMilestones:['Play a C major scale','Coordinate both hands','Play a full beginner piece from memory','Sight-read a simple melody'],
+   defaultResources:[{name:'Simply Piano',type:'course',url:'https://www.joytunes.com/simply-piano'},{name:'Flowkey',type:'course',url:'https://www.flowkey.com'}]},
 ];
 
-// ══════════════════════════════════════════
-//  PERSISTENCE
-// ══════════════════════════════════════════
-function loadData() { return JSON.parse(localStorage.getItem('hundred_data') || '{"skills":[]}'); }
-function saveData(d) { localStorage.setItem('hundred_data', JSON.stringify(d)); }
+// ══ DATA ══
+const ld = () => JSON.parse(localStorage.getItem('hundred_data')||'{"skills":[]}');
+const sd = d => localStorage.setItem('hundred_data', JSON.stringify(d));
 
-// ══════════════════════════════════════════
-//  STATE
-// ══════════════════════════════════════════
-let currentSkillId = null;
-let currentSessionIdx = null;
-let pendingLibItem = null;
-let timerInterval = null;
-let currentTab = 'sessions';
-let docMode = true; // true = documented, false = undocumented
+// ══ STATE ══
+let currentSkillId=null, currentSessionIdx=null, pendingLibItem=null;
+let timerInterval=null, currentTab='sessions', docMode=true;
 
-// ══════════════════════════════════════════
-//  THEME
-// ══════════════════════════════════════════
-function initTheme() {
-  const saved = localStorage.getItem('hundred_theme') || 'light';
-  document.documentElement.setAttribute('data-theme', saved);
-  document.getElementById('theme-color-meta').content = saved === 'dark' ? '#0D0D0F' : '#ffffff';
+// ══ THEME ══
+function initTheme(){
+  const t=localStorage.getItem('hundred_theme')||'light';
+  document.documentElement.setAttribute('data-theme',t);
+  document.getElementById('theme-color-meta').content = t==='dark'?'#130d1f':'#f0ecff';
 }
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  const next = cur === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('hundred_theme', next);
-  document.getElementById('theme-color-meta').content = next === 'dark' ? '#0D0D0F' : '#ffffff';
+function toggleTheme(){
+  const cur=document.documentElement.getAttribute('data-theme');
+  const next=cur==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',next);
+  localStorage.setItem('hundred_theme',next);
+  document.getElementById('theme-color-meta').content=next==='dark'?'#130d1f':'#f0ecff';
 }
 initTheme();
 
-// ══════════════════════════════════════════
-//  NAVIGATION
-// ══════════════════════════════════════════
-function navTo(screen) {
-  ['home','library','stats'].forEach(s => {
-    document.getElementById('screen-'+s).classList.toggle('active', s===screen);
-    document.getElementById('nav-'+s)?.classList.toggle('active', s===screen);
+// ══ NAV ══
+function navTo(s){
+  ['home','library','stats'].forEach(x=>{
+    document.getElementById('screen-'+x).classList.toggle('active',x===s);
+    document.getElementById('nav-'+x)?.classList.toggle('active',x===s);
   });
   document.getElementById('screen-detail').classList.remove('active');
-  if (screen==='library') renderLibrary();
-  if (screen==='stats') renderStats();
-  if (screen==='home') renderHome();
+  if(s==='library') renderLibrary();
+  if(s==='stats')   renderStats();
+  if(s==='home')    renderHome();
 }
-function goHome() { stopTimerSilent(); navTo('home'); }
+function goHome(){ stopTimerSilent(); navTo('home'); }
 
-// ══════════════════════════════════════════
-//  HOME
-// ══════════════════════════════════════════
-function renderHome() {
-  const data = loadData();
-  const list = document.getElementById('skill-list');
-  const empty = document.getElementById('empty-home');
-  const active = data.skills.filter(s => !s.archived);
-  list.innerHTML = '';
-  if (!active.length) { empty.style.display='block'; return; }
+// ══ HOME ══
+function renderHome(){
+  const data=ld();
+  const list=document.getElementById('skill-list');
+  const empty=document.getElementById('empty-home');
+  const active=data.skills.filter(s=>!s.archived);
+  list.innerHTML='';
+  if(!active.length){empty.style.display='block';return;}
   empty.style.display='none';
-  active.sort((a,b) => {
-    const la = a.sessions.length ? a.sessions[a.sessions.length-1].ts : 0;
-    const lb = b.sessions.length ? b.sessions[b.sessions.length-1].ts : 0;
-    return lb - la;
+  active.sort((a,b)=>{
+    const la=a.sessions.length?a.sessions[a.sessions.length-1].ts:0;
+    const lb=b.sessions.length?b.sessions[b.sessions.length-1].ts:0;
+    return lb-la;
   });
-  active.forEach((skill, i) => {
-    const card = makeSkillCard(skill);
-    card.style.animationDelay = (i * 0.06) + 's';
+  active.forEach((sk,i)=>{
+    const card=makeSkillCard(sk);
+    card.style.animationDelay=(i*0.07)+'s';
     list.appendChild(card);
   });
 }
 
-function makeSkillCard(skill) {
-  const totalMins = skill.sessions.reduce((s,x) => s + x.duration, 0);
-  const totalHrs = totalMins / 60;
-  const pct = Math.min(totalHrs / skill.goal, 1);
-  const r = 40; const circ = 2 * Math.PI * r;
-
-  const card = document.createElement('div');
-  card.className = 'skill-card entering';
-  card.id = 'card-' + skill.id;
-  card.onclick = () => openDetail(skill.id);
-
-  const running = skill.timerStart != null;
-
-  card.innerHTML = `
-    ${running ? `<div class="recording-dot"></div>` : ''}
-    <div class="ring-wrap" style="width:90px;height:90px">
-      <svg viewBox="0 0 90 90" width="90" height="90">
+function makeSkillCard(sk){
+  const totalMins=sk.sessions.reduce((s,x)=>s+x.duration,0);
+  const totalHrs=totalMins/60;
+  const pct=Math.min(totalHrs/sk.goal,1);
+  const r=40, circ=2*Math.PI*r;
+  const card=document.createElement('div');
+  card.className='skill-card glass-card entering';
+  card.id='card-'+sk.id;
+  card.onclick=()=>openDetail(sk.id);
+  card.innerHTML=`
+    ${sk.timerStart?'<div class="recording-dot"></div>':''}
+    <div class="ring-outer">
+      <svg viewBox="0 0 90 90">
         <circle class="ring-bg" cx="45" cy="45" r="${r}"/>
         <circle class="ring-fill" cx="45" cy="45" r="${r}"
-          stroke-dasharray="${circ.toFixed(2)}"
-          stroke-dashoffset="${(circ*(1-pct)).toFixed(2)}"/>
+          stroke-dasharray="${(2*Math.PI*r).toFixed(2)}"
+          stroke-dashoffset="${(2*Math.PI*r*(1-pct)).toFixed(2)}"/>
       </svg>
-      <div class="ring-emoji" style="font-size:26px">${skill.icon}</div>
+      <div class="ring-emoji-center">${sk.icon}</div>
     </div>
-    <div class="skill-card-name">${skill.name}</div>
-    <div class="skill-card-hrs">${totalHrs.toFixed(1)}h</div>
+    <div class="skill-card-name">${sk.name}</div>
+    <div class="skill-card-hrs">${totalHrs.toFixed(1)}h / ${sk.goal}h</div>
   `;
   return card;
 }
 
-// ══════════════════════════════════════════
-//  ZOOM ANIMATION
-// ══════════════════════════════════════════
-function playZoomAnimation(skillId, oldMins, newMins) {
-  const data = loadData();
-  const skill = data.skills.find(s => s.id === skillId);
-  if (!skill) return;
+// ══ SEGMENT ZOOM ANIMATION ══
+function playSegmentZoom(skillId, oldMins, newMins){
+  const data=ld();
+  const sk=data.skills.find(s=>s.id===skillId);
+  if(!sk) return;
+  const circ=263.89, goal=sk.goal;
+  const oldPct=Math.min(oldMins/60/goal,1);
+  const newPct=Math.min(newMins/60/goal,1);
+  const addedHrs=(newMins-oldMins)/60;
 
-  const goal = skill.goal;
-  const circ = 263.89;
-  const oldPct = Math.min(oldMins / 60 / goal, 1);
-  const newPct = Math.min(newMins / 60 / goal, 1);
+  // Arc positions: we only show the NEW slice segment
+  // seg-base = full progress up to old point
+  // seg-new  = only the new added arc
+  const segBase=document.getElementById('seg-base');
+  const segNew=document.getElementById('seg-new');
+  const pill=document.getElementById('seg-pill');
 
-  const addedHrs = (newMins - oldMins) / 60;
+  // base arc (existing progress)
+  segBase.style.strokeDashoffset=(circ*(1-oldPct)).toFixed(2);
 
-  // find card position
-  const card = document.getElementById('card-' + skillId);
-  const overlay = document.getElementById('zoom-overlay');
-  const container = document.getElementById('zoom-ring-container');
+  // new arc: starts where old ended, draws forward
+  // dasharray = length of new segment only, offset = start position
+  const newLen=(newPct-oldPct)*circ;
+  const newOffset=circ-oldPct*circ; // start at end of old progress
+  segNew.style.strokeDasharray=`${newLen.toFixed(2)} ${(circ-newLen).toFixed(2)}`;
+  segNew.style.strokeDashoffset=newOffset.toFixed(2);
 
-  let cx = window.innerWidth / 2, cy = window.innerHeight / 2;
-  if (card) {
-    const rect = card.getBoundingClientRect();
-    cx = rect.left + rect.width / 2;
-    cy = rect.top + rect.height / 2;
+  pill.textContent=`+${addedHrs.toFixed(1)}h · now ${(newPct*100).toFixed(1)}%`;
+
+  // position over the new segment midpoint on the ring
+  const card=document.getElementById('card-'+skillId);
+  const wrap=document.getElementById('seg-wrap');
+  let cx=window.innerWidth/2, cy=window.innerHeight/2;
+  if(card){
+    const rect=card.getBoundingClientRect();
+    cx=rect.left+rect.width/2;
+    cy=rect.top+rect.height/2;
   }
+  wrap.style.left=cx+'px';
+  wrap.style.top=cy+'px';
+  wrap.style.transform='translate(-50%,-50%)';
 
-  container.style.left = cx + 'px';
-  container.style.top = cy + 'px';
-  container.style.transform = 'translate(-50%, -50%)';
-
-  // set ring values
-  document.getElementById('zoom-old').style.strokeDashoffset = (circ * (1 - oldPct)).toFixed(2);
-  document.getElementById('zoom-new').style.strokeDashoffset = (circ * (1 - newPct)).toFixed(2);
-  document.getElementById('zoom-label').textContent = '+' + addedHrs.toFixed(1) + 'h · ' + (newPct*100).toFixed(1) + '%';
-
+  // reset animation
+  const overlay=document.getElementById('seg-overlay');
+  overlay.classList.remove('active');
+  void overlay.offsetWidth;
   overlay.classList.add('active');
-  setTimeout(() => overlay.classList.remove('active'), 2400);
+  setTimeout(()=>overlay.classList.remove('active'),2700);
 }
 
-// ══════════════════════════════════════════
-//  DETAIL
-// ══════════════════════════════════════════
-function openDetail(id) {
-  currentSkillId = id;
-  currentTab = 'sessions';
-  const data = loadData();
-  const skill = data.skills.find(s => s.id === id);
-
-  ['home','library','stats'].forEach(s => document.getElementById('screen-'+s).classList.remove('active'));
+// ══ DETAIL ══
+function openDetail(id){
+  currentSkillId=id; currentTab='sessions';
+  const data=ld(); const sk=data.skills.find(s=>s.id===id);
+  ['home','library','stats'].forEach(s=>document.getElementById('screen-'+s).classList.remove('active'));
   document.getElementById('screen-detail').classList.add('active');
-
-  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
   document.getElementById('tab-sessions').style.display='block';
   document.getElementById('tab-milestones').style.display='none';
   document.getElementById('tab-resources').style.display='none';
-
-  document.getElementById('detail-archive-btn').textContent = skill.archived ? 'Unarchive' : 'Archive';
-  renderDetail(skill);
-  if (skill.timerStart) startTimerUI(skill.timerStart); else resetTimerUI();
+  document.getElementById('detail-archive-btn').textContent=sk.archived?'Unarchive':'Archive';
+  renderDetail(sk);
+  if(sk.timerStart) startTimerUI(sk.timerStart); else resetTimerUI();
 }
 
-function renderDetail(skill) {
-  const totalMins = skill.sessions.reduce((s,x) => s+x.duration, 0);
-  const totalHrs = totalMins / 60;
-  const pct = Math.min(totalHrs / skill.goal, 1);
-  const circ = 263.89;
-
-  document.getElementById('detail-name').textContent = skill.name;
-  document.getElementById('detail-emoji').textContent = skill.icon;
-  document.getElementById('detail-hours-num').textContent = totalHrs.toFixed(1);
-  document.getElementById('detail-goal-txt').textContent = `Goal: ${skill.goal} hours · ${Math.round(pct*100)}%`;
-  document.getElementById('detail-ring').style.strokeDashoffset = (circ*(1-pct)).toFixed(2);
-
-  renderSessions(skill);
-  renderMilestones(skill);
-  renderResources(skill);
+function renderDetail(sk){
+  const totalMins=sk.sessions.reduce((s,x)=>s+x.duration,0);
+  const totalHrs=totalMins/60;
+  const pct=Math.min(totalHrs/sk.goal,1);
+  document.getElementById('detail-name').textContent=sk.name;
+  document.getElementById('detail-emoji').textContent=sk.icon;
+  document.getElementById('detail-hours-num').textContent=totalHrs.toFixed(1);
+  document.getElementById('detail-goal-txt').textContent=`Goal: ${sk.goal}h · ${Math.round(pct*100)}% complete`;
+  document.getElementById('detail-ring').style.strokeDashoffset=(263.89*(1-pct)).toFixed(2);
+  renderSessions(sk); renderMilestones(sk); renderResources(sk);
 }
 
-function renderSessions(skill) {
-  const list = document.getElementById('sessions-list');
-  list.innerHTML = '';
-  const sessions = skill.sessions.filter(s => !s.undoc);
-  const undocTotal = skill.sessions.filter(s => s.undoc).reduce((a,x) => a+x.duration, 0);
-
-  if (!sessions.length && !undocTotal) {
-    list.innerHTML = `<div class="empty" style="padding:30px 20px"><p>No sessions yet. Start the timer or log manually.</p></div>`;
+function renderSessions(sk){
+  const list=document.getElementById('sessions-list'); list.innerHTML='';
+  const docs=sk.sessions.filter(s=>!s.undoc);
+  const undocMins=sk.sessions.filter(s=>s.undoc).reduce((a,x)=>a+x.duration,0);
+  if(!docs.length&&!undocMins){
+    list.innerHTML=`<div class="empty" style="padding:28px 20px"><p>No sessions yet. Hit Start or log manually.</p></div>`;
     return;
   }
-  if (undocTotal) {
-    const el = document.createElement('div');
-    el.className = 'session-item glass-card';
-    el.innerHTML = `
-      <div class="session-row">
-        <div class="session-dur">${(undocTotal/60).toFixed(1)}h</div>
-        <div class="session-date">undocumented</div>
-      </div>
-      <div class="session-undoc">Hours logged without sessions</div>
-    `;
+  if(undocMins){
+    const el=document.createElement('div');
+    el.className='session-item glass-card';
+    el.innerHTML=`<div class="session-row"><div class="session-dur">${(undocMins/60).toFixed(1)}h</div><div class="session-date">undocumented</div></div><div class="session-undoc">Hours logged without sessions</div>`;
     list.appendChild(el);
   }
-  [...sessions].reverse().forEach((sess, ri) => {
-    const i = sessions.length - 1 - ri;
-    // find real index in full sessions array
-    const realIdx = skill.sessions.indexOf(sess);
-    const hrs = Math.floor(sess.duration/60), mins = sess.duration%60;
-    const durStr = hrs>0 ? `${hrs}h ${mins}m` : `${mins}m`;
-    const dateStr = sess.date ? new Date(sess.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
-    const el = document.createElement('div');
-    el.className = 'session-item glass-card';
-    el.onclick = () => openSessionDetail(realIdx);
-    el.innerHTML = `
-      <div class="session-row">
-        <div class="session-dur">${durStr}</div>
-        <div class="session-date">${dateStr}</div>
-      </div>
-      ${sess.note ? `<div class="session-note">${sess.note}</div>` : ''}
-      ${sess.milestone ? `<div class="session-milestone">✦ ${sess.milestone}</div>` : ''}
-    `;
+  [...docs].reverse().forEach(sess=>{
+    const realIdx=sk.sessions.indexOf(sess);
+    const h=Math.floor(sess.duration/60),m=sess.duration%60;
+    const dur=h>0?`${h}h ${m}m`:`${m}m`;
+    const date=sess.date?new Date(sess.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
+    const el=document.createElement('div');
+    el.className='session-item glass-card';
+    el.onclick=()=>openSessionDetail(realIdx);
+    el.innerHTML=`<div class="session-row"><div class="session-dur">${dur}</div><div class="session-date">${date}</div></div>${sess.note?`<div class="session-note">${sess.note}</div>`:''}${sess.milestone?`<div class="session-milestone">✦ ${sess.milestone}</div>`:''}`;
     list.appendChild(el);
   });
 }
 
-function renderMilestones(skill) {
-  const list = document.getElementById('milestones-list');
-  list.innerHTML = '';
-  if (!skill.milestones.length) {
-    list.innerHTML = `<div class="empty" style="padding:30px 20px"><p>No milestones yet.</p></div>`;
-    return;
-  }
-  skill.milestones.forEach((m,i) => {
-    const el = document.createElement('div');
-    el.className = 'milestone-item glass-card';
-    el.innerHTML = `
-      <div class="milestone-check ${m.done?'done':''}" onclick="toggleMilestone(${i})"></div>
-      <div class="milestone-text ${m.done?'done':''}">${m.text}</div>
-    `;
+function renderMilestones(sk){
+  const list=document.getElementById('milestones-list'); list.innerHTML='';
+  if(!sk.milestones.length){list.innerHTML=`<div class="empty" style="padding:28px 20px"><p>No milestones yet.</p></div>`;return;}
+  sk.milestones.forEach((m,i)=>{
+    const el=document.createElement('div'); el.className='milestone-item glass-card';
+    el.innerHTML=`<div class="m-check ${m.done?'done':''}" onclick="toggleMilestone(${i})"></div><div class="m-text ${m.done?'done':''}">${m.text}</div>`;
     list.appendChild(el);
   });
 }
 
-function renderResources(skill) {
-  const list = document.getElementById('resources-list');
-  list.innerHTML = '';
-  const icons = {video:'▶',book:'📖',website:'🔗',course:'🎓',community:'👥',other:'✦'};
-  if (!skill.resources.length) {
-    list.innerHTML = `<div class="empty" style="padding:30px 20px"><p>No resources yet.</p></div>`;
-    return;
-  }
-  skill.resources.forEach(r => {
-    const el = document.createElement('div');
-    el.className = 'resource-item glass-card';
-    if (r.url) { el.style.cursor='pointer'; el.onclick = () => window.open(r.url,'_blank'); }
-    el.innerHTML = `
-      <div class="resource-icon">${icons[r.type]||'✦'}</div>
-      <div style="flex:1;min-width:0">
-        <div class="resource-name">${r.name}</div>
-        <div class="resource-type">${r.type}</div>
-      </div>
-      ${r.url ? `<div style="color:var(--text3);font-size:18px">›</div>` : ''}
-    `;
+function renderResources(sk){
+  const list=document.getElementById('resources-list'); list.innerHTML='';
+  const icons={video:'▶',book:'📖',website:'🔗',course:'🎓',community:'👥',other:'✦'};
+  if(!sk.resources.length){list.innerHTML=`<div class="empty" style="padding:28px 20px"><p>No resources yet.</p></div>`;return;}
+  sk.resources.forEach(r=>{
+    const el=document.createElement('div'); el.className='resource-item glass-card';
+    if(r.url){el.style.cursor='pointer';el.onclick=()=>window.open(r.url,'_blank');}
+    el.innerHTML=`<div style="font-size:18px;flex-shrink:0">${icons[r.type]||'✦'}</div><div style="flex:1;min-width:0"><div style="font-size:14px">${r.name}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${r.type}</div></div>${r.url?'<div style="color:var(--text3);font-size:18px">›</div>':''}`;
     list.appendChild(el);
   });
 }
 
-function switchTab(tab, btn) {
-  currentTab = tab;
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+function switchTab(tab,btn){
+  currentTab=tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('tab-sessions').style.display = tab==='sessions'?'block':'none';
-  document.getElementById('tab-milestones').style.display = tab==='milestones'?'block':'none';
-  document.getElementById('tab-resources').style.display = tab==='resources'?'block':'none';
+  document.getElementById('tab-sessions').style.display=tab==='sessions'?'block':'none';
+  document.getElementById('tab-milestones').style.display=tab==='milestones'?'block':'none';
+  document.getElementById('tab-resources').style.display=tab==='resources'?'block':'none';
 }
 
-// ══════════════════════════════════════════
-//  TIMER
-// ══════════════════════════════════════════
-function startTimer() {
-  const data = loadData();
-  const skill = data.skills.find(s => s.id===currentSkillId);
-  if (skill.timerStart) return;
-  skill.timerStart = Date.now();
-  saveData(data);
-  startTimerUI(skill.timerStart);
+// ══ TIMER ══
+function startTimer(){
+  const data=ld(); const sk=data.skills.find(s=>s.id===currentSkillId);
+  if(sk.timerStart) return;
+  sk.timerStart=Date.now(); sd(data); startTimerUI(sk.timerStart);
 }
-function startTimerUI(startTs) {
+function startTimerUI(ts){
   document.getElementById('timer-start-btn').style.display='none';
   document.getElementById('timer-stop-btn').style.display='inline-flex';
   document.getElementById('timer-display').classList.add('running');
-  if (timerInterval) clearInterval(timerInterval);
-  timerInterval = setInterval(() => {
-    const e = Math.floor((Date.now()-startTs)/1000);
-    const h=Math.floor(e/3600), m=Math.floor((e%3600)/60), s=e%60;
-    document.getElementById('timer-display').textContent =
-      `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-  }, 1000);
+  if(timerInterval) clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{
+    const e=Math.floor((Date.now()-ts)/1000);
+    const h=Math.floor(e/3600),m=Math.floor((e%3600)/60),s=e%60;
+    document.getElementById('timer-display').textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  },1000);
 }
-function stopTimer() {
-  const data = loadData();
-  const skill = data.skills.find(s => s.id===currentSkillId);
-  if (!skill.timerStart) return;
-  const elapsed = Math.floor((Date.now()-skill.timerStart)/1000);
-  const mins = Math.max(1, Math.round(elapsed/60));
-  const oldMins = skill.sessions.reduce((s,x)=>s+x.duration,0);
-  skill.timerStart = null;
-  skill.sessions.push({ id:Date.now(), duration:mins, date:new Date().toISOString(), note:'', milestone:'', ts:Date.now(), undoc:false });
-  saveData(data);
-  stopTimerSilent();
-  renderDetail(skill);
-  renderHome();
+function stopTimer(){
+  const data=ld(); const sk=data.skills.find(s=>s.id===currentSkillId);
+  if(!sk.timerStart) return;
+  const elapsed=Math.floor((Date.now()-sk.timerStart)/1000);
+  const mins=Math.max(1,Math.round(elapsed/60));
+  const oldMins=sk.sessions.reduce((s,x)=>s+x.duration,0);
+  sk.timerStart=null;
+  sk.sessions.push({id:Date.now(),duration:mins,date:new Date().toISOString(),note:'',milestone:'',ts:Date.now(),undoc:false});
+  sd(data); stopTimerSilent(); renderDetail(sk); renderHome();
   showToast(`Session saved — ${mins} min`);
-  setTimeout(() => playZoomAnimation(currentSkillId, oldMins, oldMins+mins), 400);
+  setTimeout(()=>playSegmentZoom(currentSkillId,oldMins,oldMins+mins),350);
 }
-function stopTimerSilent() {
-  if (timerInterval) { clearInterval(timerInterval); timerInterval=null; }
+function stopTimerSilent(){
+  if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
   resetTimerUI();
 }
-function resetTimerUI() {
+function resetTimerUI(){
   document.getElementById('timer-display').textContent='00:00:00';
   document.getElementById('timer-display').classList.remove('running');
   document.getElementById('timer-start-btn').style.display='inline-flex';
   document.getElementById('timer-stop-btn').style.display='none';
 }
 
-// ══════════════════════════════════════════
-//  DOC TOGGLE
-// ══════════════════════════════════════════
-function toggleDocMode() {
-  docMode = !docMode;
-  const toggle = document.getElementById('doc-toggle');
-  const label = document.getElementById('log-type-label');
-  toggle.classList.toggle('on', docMode);
-  label.textContent = docMode ? 'Documented session' : 'Undocumented hours';
-  document.getElementById('doc-fields').style.display = docMode ? 'block' : 'none';
-  document.getElementById('undoc-fields').style.display = docMode ? 'none' : 'block';
+// ══ DOC TOGGLE ══
+function toggleDocMode(){
+  docMode=!docMode;
+  document.getElementById('doc-toggle').classList.toggle('on',docMode);
+  document.getElementById('log-type-label').textContent=docMode?'Documented session':'Undocumented hours';
+  document.getElementById('doc-fields').style.display=docMode?'block':'none';
+  document.getElementById('undoc-fields').style.display=docMode?'none':'block';
 }
 
-// ══════════════════════════════════════════
-//  MANUAL LOG
-// ══════════════════════════════════════════
-function openManualLog() {
-  docMode = true;
+// ══ MANUAL LOG ══
+function openManualLog(){
+  docMode=true;
   document.getElementById('doc-toggle').classList.add('on');
-  document.getElementById('log-type-label').textContent = 'Documented session';
+  document.getElementById('log-type-label').textContent='Documented session';
   document.getElementById('doc-fields').style.display='block';
   document.getElementById('undoc-fields').style.display='none';
   document.getElementById('manual-dur').value='';
@@ -1166,254 +941,181 @@ function openManualLog() {
   document.getElementById('undoc-hours').value='';
   openOverlay('overlay-manual');
 }
-function confirmManualLog() {
-  const data = loadData();
-  const skill = data.skills.find(s => s.id===currentSkillId);
-  const oldMins = skill.sessions.reduce((s,x)=>s+x.duration,0);
-
-  if (docMode) {
-    const dur = parseInt(document.getElementById('manual-dur').value);
-    if (!dur||dur<1) { showToast('Enter a valid duration'); return; }
-    const dateVal = document.getElementById('manual-date').value;
-    skill.sessions.push({
-      id:Date.now(), duration:dur,
-      date: dateVal ? new Date(dateVal).toISOString() : null,
-      note: document.getElementById('manual-note').value.trim(),
-      milestone: document.getElementById('manual-milestone').value.trim(),
-      ts: Date.now(), undoc: false
-    });
-    saveData(data);
-    closeOverlay('overlay-manual');
-    renderDetail(skill); renderHome();
+function confirmManualLog(){
+  const data=ld(); const sk=data.skills.find(s=>s.id===currentSkillId);
+  const oldMins=sk.sessions.reduce((s,x)=>s+x.duration,0);
+  if(docMode){
+    const dur=parseInt(document.getElementById('manual-dur').value);
+    if(!dur||dur<1){showToast('Enter a valid duration');return;}
+    const dateVal=document.getElementById('manual-date').value;
+    sk.sessions.push({id:Date.now(),duration:dur,date:dateVal?new Date(dateVal).toISOString():null,note:document.getElementById('manual-note').value.trim(),milestone:document.getElementById('manual-milestone').value.trim(),ts:Date.now(),undoc:false});
+    sd(data); closeOverlay('overlay-manual'); renderDetail(sk); renderHome();
     showToast('Session logged');
-    setTimeout(() => playZoomAnimation(currentSkillId, oldMins, oldMins+dur), 400);
+    setTimeout(()=>playSegmentZoom(currentSkillId,oldMins,oldMins+dur),350);
   } else {
-    const hrs = parseFloat(document.getElementById('undoc-hours').value);
-    if (!hrs||hrs<=0) { showToast('Enter valid hours'); return; }
-    const mins = Math.round(hrs*60);
-    skill.sessions.push({ id:Date.now(), duration:mins, date:null, note:'', milestone:'', ts:Date.now(), undoc:true });
-    saveData(data);
-    closeOverlay('overlay-manual');
-    renderDetail(skill); renderHome();
+    const hrs=parseFloat(document.getElementById('undoc-hours').value);
+    if(!hrs||hrs<=0){showToast('Enter valid hours');return;}
+    const mins=Math.round(hrs*60);
+    sk.sessions.push({id:Date.now(),duration:mins,date:null,note:'',milestone:'',ts:Date.now(),undoc:true});
+    sd(data); closeOverlay('overlay-manual'); renderDetail(sk); renderHome();
     showToast(`${hrs}h added`);
-    setTimeout(() => playZoomAnimation(currentSkillId, oldMins, oldMins+mins), 400);
+    setTimeout(()=>playSegmentZoom(currentSkillId,oldMins,oldMins+mins),350);
   }
 }
 
-// ══════════════════════════════════════════
-//  SESSION DETAIL
-// ══════════════════════════════════════════
-function openSessionDetail(idx) {
-  currentSessionIdx = idx;
-  const data = loadData();
-  const skill = data.skills.find(s => s.id===currentSkillId);
-  const sess = skill.sessions[idx];
-  const hrs=Math.floor(sess.duration/60), mins=sess.duration%60;
-  const durStr=hrs>0?`${hrs}h ${mins}m`:`${mins}m`;
-  const dateStr=sess.date?new Date(sess.date).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):'No date';
-  document.getElementById('session-detail-content').innerHTML=`
-    <div style="display:flex;justify-content:space-between;margin-bottom:12px">
-      <div style="font-family:var(--mono);font-size:24px;font-weight:500">${durStr}</div>
-      <div style="color:var(--text2);font-size:13px;font-family:var(--mono);align-self:center">${dateStr}</div>
-    </div>
-  `;
+// ══ SESSION DETAIL ══
+function openSessionDetail(idx){
+  currentSessionIdx=idx;
+  const data=ld(); const sk=data.skills.find(s=>s.id===currentSkillId);
+  const sess=sk.sessions[idx];
+  const h=Math.floor(sess.duration/60),m=sess.duration%60;
+  const dur=h>0?`${h}h ${m}m`:`${m}m`;
+  const date=sess.date?new Date(sess.date).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):'No date';
+  document.getElementById('session-detail-content').innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:12px"><div style="font-size:24px;font-weight:500">${dur}</div><div style="color:var(--text2);font-size:13px;align-self:center">${date}</div></div>`;
   document.getElementById('session-edit-note').value=sess.note||'';
   document.getElementById('session-edit-milestone').value=sess.milestone||'';
   openOverlay('overlay-session');
 }
-function saveSessionNote() {
-  const data = loadData();
-  const skill = data.skills.find(s => s.id===currentSkillId);
-  skill.sessions[currentSessionIdx].note=document.getElementById('session-edit-note').value.trim();
-  skill.sessions[currentSessionIdx].milestone=document.getElementById('session-edit-milestone').value.trim();
-  saveData(data); closeOverlay('overlay-session'); renderDetail(skill); showToast('Updated');
+function saveSessionNote(){
+  const data=ld(); const sk=data.skills.find(s=>s.id===currentSkillId);
+  sk.sessions[currentSessionIdx].note=document.getElementById('session-edit-note').value.trim();
+  sk.sessions[currentSessionIdx].milestone=document.getElementById('session-edit-milestone').value.trim();
+  sd(data); closeOverlay('overlay-session'); renderDetail(sk); showToast('Updated');
 }
-function deleteSession() {
-  if (!confirm('Delete this session?')) return;
-  const data = loadData();
-  const skill = data.skills.find(s => s.id===currentSkillId);
-  skill.sessions.splice(currentSessionIdx,1);
-  saveData(data); closeOverlay('overlay-session'); renderDetail(skill); renderHome(); showToast('Deleted');
+function deleteSession(){
+  if(!confirm('Delete this session?')) return;
+  const data=ld(); const sk=data.skills.find(s=>s.id===currentSkillId);
+  sk.sessions.splice(currentSessionIdx,1);
+  sd(data); closeOverlay('overlay-session'); renderDetail(sk); renderHome(); showToast('Deleted');
 }
 
-// ══════════════════════════════════════════
-//  MILESTONES
-// ══════════════════════════════════════════
-function openAddMilestone() { document.getElementById('milestone-input').value=''; openOverlay('overlay-milestone'); }
-function confirmAddMilestone() {
-  const text=document.getElementById('milestone-input').value.trim();
-  if (!text) return;
-  const data=loadData(); const skill=data.skills.find(s=>s.id===currentSkillId);
-  skill.milestones.push({text,done:false}); saveData(data);
-  closeOverlay('overlay-milestone'); renderMilestones(skill); showToast('Milestone added');
+// ══ MILESTONES ══
+function openAddMilestone(){document.getElementById('milestone-input').value='';openOverlay('overlay-milestone');}
+function confirmAddMilestone(){
+  const text=document.getElementById('milestone-input').value.trim(); if(!text) return;
+  const data=ld(); const sk=data.skills.find(s=>s.id===currentSkillId);
+  sk.milestones.push({text,done:false}); sd(data); closeOverlay('overlay-milestone'); renderMilestones(sk); showToast('Milestone added');
 }
-function toggleMilestone(idx) {
-  const data=loadData(); const skill=data.skills.find(s=>s.id===currentSkillId);
-  skill.milestones[idx].done=!skill.milestones[idx].done; saveData(data);
-  renderMilestones(skill);
-  if (skill.milestones[idx].done) showToast('✦ Milestone reached!');
+function toggleMilestone(idx){
+  const data=ld(); const sk=data.skills.find(s=>s.id===currentSkillId);
+  sk.milestones[idx].done=!sk.milestones[idx].done; sd(data); renderMilestones(sk);
+  if(sk.milestones[idx].done) showToast('✦ Milestone reached!');
 }
 
-// ══════════════════════════════════════════
-//  RESOURCES
-// ══════════════════════════════════════════
-function openAddResource() { document.getElementById('resource-name').value=''; document.getElementById('resource-url').value=''; openOverlay('overlay-resource'); }
-function confirmAddResource() {
-  const name=document.getElementById('resource-name').value.trim(); if (!name) return;
-  const data=loadData(); const skill=data.skills.find(s=>s.id===currentSkillId);
-  skill.resources.push({name,type:document.getElementById('resource-type').value,url:document.getElementById('resource-url').value.trim()});
-  saveData(data); closeOverlay('overlay-resource'); renderResources(skill); showToast('Resource added');
+// ══ RESOURCES ══
+function openAddResource(){document.getElementById('resource-name').value='';document.getElementById('resource-url').value='';openOverlay('overlay-resource');}
+function confirmAddResource(){
+  const name=document.getElementById('resource-name').value.trim(); if(!name) return;
+  const data=ld(); const sk=data.skills.find(s=>s.id===currentSkillId);
+  sk.resources.push({name,type:document.getElementById('resource-type').value,url:document.getElementById('resource-url').value.trim()});
+  sd(data); closeOverlay('overlay-resource'); renderResources(sk); showToast('Resource added');
 }
 
-// ══════════════════════════════════════════
-//  GOAL
-// ══════════════════════════════════════════
-function openEditGoal() {
-  const data=loadData(); const skill=data.skills.find(s=>s.id===currentSkillId);
-  document.getElementById('goal-input').value=skill.goal; openOverlay('overlay-goal');
-}
-function confirmEditGoal() {
-  const val=parseInt(document.getElementById('goal-input').value); if (!val||val<1) return;
-  const data=loadData(); const skill=data.skills.find(s=>s.id===currentSkillId);
-  skill.goal=val; saveData(data); closeOverlay('overlay-goal'); renderDetail(skill); showToast('Goal updated');
+// ══ GOAL ══
+function openEditGoal(){const data=ld();const sk=data.skills.find(s=>s.id===currentSkillId);document.getElementById('goal-input').value=sk.goal;openOverlay('overlay-goal');}
+function confirmEditGoal(){
+  const val=parseInt(document.getElementById('goal-input').value); if(!val||val<1) return;
+  const data=ld(); const sk=data.skills.find(s=>s.id===currentSkillId);
+  sk.goal=val; sd(data); closeOverlay('overlay-goal'); renderDetail(sk); showToast('Goal updated');
 }
 
-// ══════════════════════════════════════════
-//  ARCHIVE
-// ══════════════════════════════════════════
-function toggleArchiveSkill() {
-  const data=loadData(); const skill=data.skills.find(s=>s.id===currentSkillId);
-  skill.archived=!skill.archived; saveData(data);
-  showToast(skill.archived?'Skill archived':'Skill restored');
-  goHome();
+// ══ ARCHIVE ══
+function toggleArchiveSkill(){
+  const data=ld(); const sk=data.skills.find(s=>s.id===currentSkillId);
+  sk.archived=!sk.archived; sd(data); showToast(sk.archived?'Skill archived':'Skill restored'); goHome();
 }
-function showArchived() {
-  const data=loadData(); const archived=data.skills.filter(s=>s.archived);
+function showArchived(){
+  const data=ld(); const arch=data.skills.filter(s=>s.archived);
   const list=document.getElementById('archived-list'); list.innerHTML='';
-  if (!archived.length) { list.innerHTML=`<div class="empty" style="padding:20px 0"><p>No archived skills.</p></div>`; }
-  else archived.forEach(skill => {
+  if(!arch.length){list.innerHTML=`<div class="empty" style="padding:20px 0"><p>No archived skills.</p></div>`;}
+  else arch.forEach(sk=>{
     const el=document.createElement('div');
     el.style.cssText='padding:12px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;';
-    el.innerHTML=`
-      <div>
-        <div style="font-size:16px;font-weight:500">${skill.icon} ${skill.name}</div>
-        <div style="color:var(--text3);font-size:12px;font-family:var(--mono)">${(skill.sessions.reduce((s,x)=>s+x.duration,0)/60).toFixed(1)}h logged</div>
-      </div>
-      <button class="btn btn-sm btn-outline" onclick="unarchiveFromList('${skill.id}')">Restore</button>
-    `;
+    el.innerHTML=`<div><div style="font-size:16px;font-weight:500">${sk.icon} ${sk.name}</div><div style="color:var(--text3);font-size:12px">${(sk.sessions.reduce((s,x)=>s+x.duration,0)/60).toFixed(1)}h logged</div></div><button class="btn btn-sm btn-outline" onclick="unarchiveFromList('${sk.id}')">Restore</button>`;
     list.appendChild(el);
   });
   openOverlay('overlay-archived');
 }
-function unarchiveFromList(id) {
-  const data=loadData(); const skill=data.skills.find(s=>s.id===id);
-  skill.archived=false; saveData(data);
-  closeOverlay('overlay-archived'); renderHome(); showToast('Skill restored');
+function unarchiveFromList(id){
+  const data=ld(); const sk=data.skills.find(s=>s.id===id);
+  sk.archived=false; sd(data); closeOverlay('overlay-archived'); renderHome(); showToast('Skill restored');
 }
 
-// ══════════════════════════════════════════
-//  LIBRARY
-// ══════════════════════════════════════════
-function renderLibrary() {
-  const data=loadData(); const ownedIds=data.skills.map(s=>s.libId);
+// ══ LIBRARY ══
+function renderLibrary(){
+  const data=ld(); const owned=data.skills.map(s=>s.libId);
   const grid=document.getElementById('library-grid'); grid.innerHTML='';
-  LIBRARY.forEach(item => {
-    const owned=ownedIds.includes(item.id);
+  LIBRARY.forEach(item=>{
+    const o=owned.includes(item.id);
     const el=document.createElement('div');
-    el.className='lib-card glass-card'+(owned?' owned':'');
-    el.onclick=()=>owned?null:openLibAdd(item);
-    el.innerHTML=`<div class="lib-icon">${item.icon}</div><div class="lib-name">${item.name}</div><div class="lib-desc">${owned?'✓ added':item.desc}</div>`;
+    el.className='lib-card glass-card'+(o?' owned':'');
+    el.onclick=()=>o?null:openLibAdd(item);
+    el.innerHTML=`<div class="lib-icon">${item.icon}</div><div class="lib-name">${item.name}</div><div class="lib-desc">${o?'✓ added':item.desc}</div>`;
     grid.appendChild(el);
   });
 }
-function openLibAdd(item) {
+function openLibAdd(item){
   pendingLibItem=item;
   document.getElementById('lib-add-title').textContent=item.icon+' '+item.name;
   document.getElementById('lib-add-desc').textContent=item.desc;
   document.getElementById('lib-goal-input').value=100;
   openOverlay('overlay-lib-add');
 }
-function confirmAddFromLib() {
+function confirmAddFromLib(){
   const goal=parseInt(document.getElementById('lib-goal-input').value)||100;
-  const item=pendingLibItem; const data=loadData();
-  data.skills.push({
-    id:'skill_'+Date.now(), libId:item.id, name:item.name, icon:item.icon, goal,
-    sessions:[], milestones:item.defaultMilestones.map(t=>({text:t,done:false})),
-    resources:[...item.defaultResources], archived:false, timerStart:null
-  });
-  saveData(data); closeOverlay('overlay-lib-add');
-  renderLibrary(); renderHome();
-  showToast(item.name+' added!');
+  const item=pendingLibItem; const data=ld();
+  data.skills.push({id:'skill_'+Date.now(),libId:item.id,name:item.name,icon:item.icon,goal,sessions:[],milestones:item.defaultMilestones.map(t=>({text:t,done:false})),resources:[...item.defaultResources],archived:false,timerStart:null});
+  sd(data); closeOverlay('overlay-lib-add'); renderLibrary(); renderHome(); showToast(item.name+' added!');
 }
-function openCustomSkill() {
+function openCustomSkill(){
   document.getElementById('custom-name').value='';
   document.getElementById('custom-emoji').value='';
   document.getElementById('custom-goal').value=100;
   openOverlay('overlay-custom');
 }
-function confirmCustomSkill() {
-  const name=document.getElementById('custom-name').value.trim(); if (!name) return;
+function confirmCustomSkill(){
+  const name=document.getElementById('custom-name').value.trim(); if(!name) return;
   const icon=document.getElementById('custom-emoji').value.trim()||'✦';
   const goal=parseInt(document.getElementById('custom-goal').value)||100;
-  const data=loadData();
+  const data=ld();
   data.skills.push({id:'skill_'+Date.now(),libId:null,name,icon,goal,sessions:[],milestones:[],resources:[],archived:false,timerStart:null});
-  saveData(data); closeOverlay('overlay-custom'); renderHome(); navTo('home'); showToast(name+' created!');
+  sd(data); closeOverlay('overlay-custom'); renderHome(); navTo('home'); showToast(name+' created!');
 }
 
-// ══════════════════════════════════════════
-//  STATS
-// ══════════════════════════════════════════
-function renderStats() {
-  const data=loadData(); const el=document.getElementById('stats-content');
-  if (!data.skills.length) { el.innerHTML=`<div class="empty"><div class="empty-icon">📊</div><h3>No data yet</h3><p>Add a skill and log sessions to see stats.</p></div>`; return; }
+// ══ STATS ══
+function renderStats(){
+  const data=ld(); const el=document.getElementById('stats-content');
+  if(!data.skills.length){el.innerHTML=`<div class="empty"><div class="empty-icon">📊</div><h3>No data yet</h3><p>Add a skill and start logging.</p></div>`;return;}
   const all=data.skills.filter(s=>!s.archived);
   const totalHrs=all.reduce((s,sk)=>s+sk.sessions.reduce((a,x)=>a+x.duration,0),0)/60;
-  const totalSessions=all.reduce((s,sk)=>s+sk.sessions.filter(x=>!x.undoc).length,0);
-  let html=`<div class="stats-card glass-card">
-    <div class="stats-row"><div class="stats-label">Total hours</div><div class="stats-value">${totalHrs.toFixed(1)}h</div></div>
-    <div class="stats-row"><div class="stats-label">Total sessions</div><div class="stats-value">${totalSessions}</div></div>
-    <div class="stats-row"><div class="stats-label">Active skills</div><div class="stats-value">${all.length}</div></div>
-  </div>`;
-  all.forEach(skill => {
-    const hrs=skill.sessions.reduce((s,x)=>s+x.duration,0)/60;
-    const pct=Math.min(hrs/skill.goal*100,100).toFixed(0);
-    const done=skill.milestones.filter(m=>m.done).length;
-    const sessions=skill.sessions.filter(x=>!x.undoc);
+  const totalSess=all.reduce((s,sk)=>s+sk.sessions.filter(x=>!x.undoc).length,0);
+  let html=`<div class="stats-card glass-card"><div class="stats-row"><div class="stats-label">Total hours</div><div class="stats-value">${totalHrs.toFixed(1)}h</div></div><div class="stats-row"><div class="stats-label">Total sessions</div><div class="stats-value">${totalSess}</div></div><div class="stats-row"><div class="stats-label">Active skills</div><div class="stats-value">${all.length}</div></div></div>`;
+  all.forEach(sk=>{
+    const hrs=sk.sessions.reduce((s,x)=>s+x.duration,0)/60;
+    const pct=Math.min(hrs/sk.goal*100,100).toFixed(0);
+    const sessions=sk.sessions.filter(x=>!x.undoc);
     const avg=sessions.length?(hrs/sessions.length*60).toFixed(0):'—';
-    html+=`<div class="stats-card glass-card">
-      <div style="font-size:18px;font-weight:600;margin-bottom:12px">${skill.icon} ${skill.name}</div>
-      <div class="stats-row"><div class="stats-label">Hours</div><div class="stats-value">${hrs.toFixed(1)}h / ${skill.goal}h</div></div>
-      <div class="stats-row"><div class="stats-label">Progress</div><div class="stats-value" style="background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent">${pct}%</div></div>
-      <div class="stats-row"><div class="stats-label">Sessions</div><div class="stats-value">${sessions.length}</div></div>
-      <div class="stats-row"><div class="stats-label">Avg session</div><div class="stats-value">${avg} min</div></div>
-      <div class="stats-row"><div class="stats-label">Milestones</div><div class="stats-value">${done} / ${skill.milestones.length}</div></div>
-    </div>`;
+    const done=sk.milestones.filter(m=>m.done).length;
+    html+=`<div class="stats-card glass-card"><div style="font-size:18px;font-weight:600;margin-bottom:12px">${sk.icon} ${sk.name}</div><div class="stats-row"><div class="stats-label">Hours</div><div class="stats-value">${hrs.toFixed(1)}h / ${sk.goal}h</div></div><div class="stats-row"><div class="stats-label">Progress</div><div class="stats-value" style="background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent">${pct}%</div></div><div class="stats-row"><div class="stats-label">Sessions</div><div class="stats-value">${sessions.length}</div></div><div class="stats-row"><div class="stats-label">Avg session</div><div class="stats-value">${avg} min</div></div><div class="stats-row"><div class="stats-label">Milestones</div><div class="stats-value">${done} / ${sk.milestones.length}</div></div></div>`;
   });
   el.innerHTML=html;
 }
 
-// ══════════════════════════════════════════
-//  OVERLAY UTILS
-// ══════════════════════════════════════════
-function openOverlay(id) { document.getElementById(id).classList.add('open'); }
-function closeOverlay(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.overlay').forEach(ov => {
-  ov.addEventListener('click', e => { if (e.target===ov) ov.classList.remove('open'); });
+// ══ OVERLAY ══
+const openOverlay=id=>document.getElementById(id).classList.add('open');
+const closeOverlay=id=>document.getElementById(id).classList.remove('open');
+document.querySelectorAll('.overlay').forEach(ov=>{
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.classList.remove('open');});
 });
 
-// ══════════════════════════════════════════
-//  TOAST
-// ══════════════════════════════════════════
+// ══ TOAST ══
 let toastTimer=null;
-function showToast(msg) {
+function showToast(msg){
   const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
-  if (toastTimer) clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2300);
 }
 
-// ══════════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════════
 renderHome();
 </script>
 </body>
