@@ -109,8 +109,8 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
 /* ── RING ── */
 .ring-outer{position:relative;width:96px;height:96px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .ring-outer svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
-.ring-bg{fill:none;stroke:rgba(100,130,220,.18);stroke-width:5}
-.ring-fill{fill:none;stroke:url(#ringGrad);stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset .9s cubic-bezier(.4,0,.2,1)}
+.ring-bg{fill:none;stroke:rgba(100,130,220,.18);stroke-width:7}
+.ring-fill{fill:none;stroke:url(#ringGrad);stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset .9s cubic-bezier(.4,0,.2,1)}
 .ring-emoji-center{position:relative;z-index:2;width:66px;height:66px;display:flex;align-items:center;justify-content:center;font-size:30px;line-height:1}
 .skill-card-name{margin-top:9px;font-size:13px;font-weight:500;color:var(--text);text-align:center;letter-spacing:-.15px;line-height:1.2}
 .skill-card-hrs{font-size:11px;color:var(--text3);margin-top:2px;font-variant-numeric:tabular-nums}
@@ -251,18 +251,46 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
 .toggle::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .3s cubic-bezier(.34,1.56,.64,1);box-shadow:0 1px 4px rgba(0,0,0,.2)}
 .toggle.on::after{transform:translateX(22px)}
 
-/* ── SEGMENT ANIMATION ── */
-#seg-overlay{display:none;position:fixed;inset:0;z-index:490;pointer-events:none}
-#seg-overlay.active{display:block}
-#seg-dim{position:absolute;inset:0;background:rgba(0,0,0,0);transition:background .35s ease}
-#seg-dim.show{background:rgba(0,0,0,.25)}
-#seg-piece{position:absolute;width:120px;height:120px;pointer-events:none;opacity:0;transition:transform .52s cubic-bezier(.34,1.1,.64,1),opacity .28s ease}
-#seg-piece svg{width:120px;height:120px;transform:rotate(-90deg);overflow:visible;filter:drop-shadow(0 4px 24px rgba(79,126,255,.5))}
-.seg-ring-bg{fill:none;stroke:rgba(100,130,220,.18);stroke-width:6}
-.seg-ring-base{fill:none;stroke:rgba(100,130,220,.35);stroke-width:6;stroke-linecap:round}
-.seg-ring-new{fill:none;stroke:url(#segGrad);stroke-width:7;stroke-linecap:round;transition:stroke-dasharray .9s cubic-bezier(.4,0,.2,1)}
-#seg-pill{position:absolute;left:50%;transform:translateX(-50%);bottom:-28px;background:var(--grad);color:#fff;font-size:10px;font-weight:600;padding:4px 12px;border-radius:20px;white-space:nowrap;letter-spacing:.03em;opacity:0;transition:opacity .3s ease}
-#seg-pill.show{opacity:1}
+/* ── RING ANIMATION DIM ── */
+#anim-dim{
+  display:none;position:fixed;inset:0;z-index:480;
+  background:rgba(0,0,0,0);
+  transition:background .4s ease;
+  pointer-events:none;
+}
+#anim-dim.show{background:rgba(10,14,30,.55);}
+
+/* ring counter overlay — shown inside the ring while animating */
+#ring-counter{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:3;opacity:0;
+  transition:opacity .3s ease;
+  pointer-events:none;
+}
+#ring-counter.show{opacity:1;}
+#ring-counter-hrs{
+  font-size:18px;font-weight:300;
+  background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  font-variant-numeric:tabular-nums;line-height:1;
+}
+#ring-counter-pct{
+  font-size:11px;font-weight:500;color:var(--text3);
+  margin-top:3px;font-variant-numeric:tabular-nums;
+}
+
+/* when animating, ring-anchor moves freely */
+#detail-ring-anchor.animating{
+  position:fixed;
+  z-index:490;
+  /* width/height set by JS */
+  transition:
+    top    .52s cubic-bezier(.34,1.1,.64,1),
+    left   .52s cubic-bezier(.34,1.1,.64,1),
+    width  .52s cubic-bezier(.34,1.1,.64,1),
+    height .52s cubic-bezier(.34,1.1,.64,1);
+}
+
 
 /* ── TOAST ── */
 .toast{position:fixed;top:calc(20px + var(--safe-top));left:50%;transform:translateX(-50%) translateY(-90px);background:var(--glass);color:var(--text);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--glass-bdr);box-shadow:var(--glass-shd);padding:10px 22px;border-radius:50px;font-size:13px;font-weight:500;z-index:999;transition:transform .38s cubic-bezier(.34,1.56,.64,1);white-space:nowrap}
@@ -323,6 +351,10 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
           <circle id="detail-ring" class="ring-fill" cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="263.89"/>
         </svg>
         <div class="detail-ring-emoji" id="detail-emoji"></div>
+        <div id="ring-counter">
+          <div id="ring-counter-hrs">0</div>
+          <div id="ring-counter-pct">0%</div>
+        </div>
       </div>
       <div class="detail-info">
         <div class="detail-name" id="detail-name"></div>
@@ -456,18 +488,8 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
   <div style="height:10px"></div><button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-archived')">Close</button></div>
 </div>
 
-<!-- SEGMENT ANIMATION -->
-<div id="seg-overlay">
-  <div id="seg-dim"></div>
-  <div id="seg-piece">
-    <svg viewBox="0 0 120 120">
-      <circle class="seg-ring-bg"   cx="60" cy="60" r="50"/>
-      <circle class="seg-ring-base" id="seg-base" cx="60" cy="60" r="50" stroke-dasharray="314.16" stroke-dashoffset="0"/>
-      <circle class="seg-ring-new"  id="seg-new"  cx="60" cy="60" r="50" stroke-dasharray="0 314.16"/>
-    </svg>
-    <div id="seg-pill"></div>
-  </div>
-</div>
+<!-- ANIMATION DIM -->
+<div id="anim-dim"></div>
 
 <div class="toast" id="toast"></div>
 
@@ -655,7 +677,7 @@ function stopTimer(){
   const oldMins=sk.sessions.reduce((s,x)=>s+x.duration,0);
   sk.timerStart=null;
   sk.sessions.push({id:Date.now(),duration:mins,date:new Date().toISOString(),note:'',milestone:'',ts:Date.now(),undoc:false});
-  sd(data);stopTimerSilent();renderDetail(sk);renderHome();
+  sd(data);stopTimerSilent();renderHome();
   showToast(`Session saved — ${mins} min`);
   setTimeout(()=>playSegmentAnim(currentSkillId,oldMins,oldMins+mins),350);
 }
@@ -701,7 +723,7 @@ function confirmManualLog(){
     if(!dur||dur<1){showToast('Enter a valid duration');return;}
     const dateVal=document.getElementById('manual-date').value;
     sk.sessions.push({id:Date.now(),duration:dur,date:dateVal?new Date(dateVal).toISOString():null,note:document.getElementById('manual-note').value.trim(),milestone:document.getElementById('manual-milestone').value.trim(),ts:Date.now(),undoc:false});
-    sd(data);closeOverlay('overlay-manual');renderDetail(sk);renderHome();
+    sd(data);closeOverlay('overlay-manual');renderHome();
     showToast('Session logged');
     setTimeout(()=>playSegmentAnim(currentSkillId,oldMins,oldMins+dur),350);
   } else {
@@ -709,7 +731,7 @@ function confirmManualLog(){
     if(!hrs||hrs<=0){showToast('Enter valid hours');return;}
     const mins=Math.round(hrs*60);
     sk.sessions.push({id:Date.now(),duration:mins,date:null,note:'',milestone:'',ts:Date.now(),undoc:true});
-    sd(data);closeOverlay('overlay-manual');renderDetail(sk);renderHome();
+    sd(data);closeOverlay('overlay-manual');renderHome();
     showToast(`${hrs}h added`);
     setTimeout(()=>playSegmentAnim(currentSkillId,oldMins,oldMins+mins),350);
   }
@@ -1056,84 +1078,123 @@ function onTouchEnd(e){
   }
 }
 
-// ══ SEGMENT ANIMATION ══
-function playSegmentAnim(skillId,oldMins,newMins){
-  const data=ld();const sk=data.skills.find(s=>s.id===skillId);
-  if(!sk)return;
-  const circ=314.16,goal=sk.goal;
+// ══ RING ANIMATION — real ring moves ══
+function playSegmentAnim(skillId, oldMins, newMins){
+  const data=ld();
+  const sk=data.skills.find(s=>s.id===skillId);
+  if(!sk) return;
+
+  const ringAnchor=document.getElementById('detail-ring-anchor');
+  const detailRing=document.getElementById('detail-ring');
+  const emoji=document.getElementById('detail-emoji');
+  const counter=document.getElementById('ring-counter');
+  const counterHrs=document.getElementById('ring-counter-hrs');
+  const counterPct=document.getElementById('ring-counter-pct');
+  const dim=document.getElementById('anim-dim');
+  if(!ringAnchor) return;
+
+  const circ=263.89; // matches detail ring r=42
+  const goal=sk.goal;
   const oldPct=Math.min(oldMins/60/goal,1);
   const newPct=Math.min(newMins/60/goal,1);
-  const addedHrs=(newMins-oldMins)/60;
+  const oldHrs=oldMins/60;
+  const newHrs=newMins/60;
 
-  const segBase=document.getElementById('seg-base');
-  const segNew=document.getElementById('seg-new');
-  const pill=document.getElementById('seg-pill');
-  const piece=document.getElementById('seg-piece');
-  const dim=document.getElementById('seg-dim');
-  const overlay=document.getElementById('seg-overlay');
+  // get ring's current position on screen
+  const rect=ringAnchor.getBoundingClientRect();
+  const origTop=rect.top;
+  const origLeft=rect.left;
+  const origW=rect.width;
+  const origH=rect.height;
 
-  // base = existing progress shown dimly
-  const baseLen=(oldPct*circ).toFixed(2);
-  segBase.style.strokeDasharray=`${baseLen} ${(circ-baseLen).toFixed(2)}`;
-  segBase.style.strokeDashoffset='0';
+  // target: center of screen, larger
+  const scale=3.2;
+  const targetW=origW*scale;
+  const targetH=origH*scale;
+  const targetLeft=(window.innerWidth-targetW)/2;
+  const targetTop=(window.innerHeight-targetH)/2;
 
-  // new segment starts at zero length, positioned after base
-  const newLen=((newPct-oldPct)*circ).toFixed(2);
-  const newOffset=(-(oldPct*circ)).toFixed(2);
-  segNew.style.transition='none';
-  segNew.style.strokeDasharray=`0 ${circ}`;
-  segNew.style.strokeDashoffset=newOffset;
+  // STEP 0: freeze ring to fixed position before animating
+  ringAnchor.classList.add('animating');
+  ringAnchor.style.top=origTop+'px';
+  ringAnchor.style.left=origLeft+'px';
+  ringAnchor.style.width=origW+'px';
+  ringAnchor.style.height=origH+'px';
+  ringAnchor.style.transition='none';
 
-  pill.textContent=`+${addedHrs.toFixed(1)}h · ${(newPct*100).toFixed(1)}%`;
-  pill.classList.remove('show');
+  // hide emoji during animation, show counter
+  emoji.style.opacity='0';
 
-  // get ring position
-  const ringEl=document.getElementById('detail-ring-anchor');
-  let originX=window.innerWidth/2,originY=window.innerHeight/2;
-  if(ringEl){const r=ringEl.getBoundingClientRect();originX=r.left+r.width/2;originY=r.top+r.height/2;}
-  const cx=window.innerWidth/2,cy=window.innerHeight/2;
-  const ox=originX-60,oy=originY-60;
-  const tx=cx-60,ty=cy-60;
+  // show dim
+  dim.style.display='block';
+  requestAnimationFrame(()=>{ dim.classList.add('show'); });
 
-  piece.style.transition='none';
-  piece.style.opacity='0';
-  piece.style.transform=`translate(${ox}px,${oy}px) scale(1)`;
-  overlay.classList.add('active');
-
+  // STEP 1: fly to center (after a tick to register initial fixed position)
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    // appear at ring
-    piece.style.transition='opacity .22s ease';
-    piece.style.opacity='1';
+    ringAnchor.style.transition=
+      'top .52s cubic-bezier(.34,1.1,.64,1), left .52s cubic-bezier(.34,1.1,.64,1), width .52s cubic-bezier(.34,1.1,.64,1), height .52s cubic-bezier(.34,1.1,.64,1)';
+    ringAnchor.style.top=targetTop+'px';
+    ringAnchor.style.left=targetLeft+'px';
+    ringAnchor.style.width=targetW+'px';
+    ringAnchor.style.height=targetH+'px';
 
+    // STEP 2: after arriving at center, draw arc + count up numbers
     setTimeout(()=>{
-      // fly to center
-      piece.style.transition='transform .52s cubic-bezier(.34,1.1,.64,1), opacity .22s ease';
-      piece.style.transform=`translate(${tx}px,${ty}px) scale(3.6)`;
-      dim.classList.add('show');
+      // show counter
+      counterHrs.textContent=oldHrs.toFixed(1);
+      counterPct.textContent=Math.round(oldPct*100)+'%';
+      counter.classList.add('show');
 
+      // draw the new arc
+      detailRing.style.transition='stroke-dashoffset .95s cubic-bezier(.4,0,.2,1)';
+      detailRing.style.strokeDashoffset=(circ*(1-newPct)).toFixed(2);
+
+      // animate numbers counting up
+      const duration=950;
+      const startTime=performance.now();
+      function countUp(now){
+        const t=Math.min((now-startTime)/duration,1);
+        const ease=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2; // ease in-out quad
+        const curHrs=oldHrs+(newHrs-oldHrs)*ease;
+        const curPct=oldPct*100+(newPct-oldPct)*100*ease;
+        counterHrs.textContent=curHrs.toFixed(1);
+        counterPct.textContent=Math.round(curPct)+'%';
+        if(t<1) requestAnimationFrame(countUp);
+      }
+      requestAnimationFrame(countUp);
+
+      // STEP 3: hold, then fly back
       setTimeout(()=>{
-        // draw new segment
-        segNew.style.transition='stroke-dasharray .9s cubic-bezier(.4,0,.2,1)';
-        segNew.style.strokeDasharray=`${newLen} ${(circ-newLen).toFixed(2)}`;
-        pill.classList.add('show');
+        // fade counter, show emoji again
+        counter.classList.remove('show');
+        setTimeout(()=>{ emoji.style.opacity='1'; },200);
 
+        // fly back
+        ringAnchor.style.transition=
+          'top .48s cubic-bezier(.4,0,.6,1), left .48s cubic-bezier(.4,0,.6,1), width .48s cubic-bezier(.4,0,.6,1), height .48s cubic-bezier(.4,0,.6,1)';
+        ringAnchor.style.top=origTop+'px';
+        ringAnchor.style.left=origLeft+'px';
+        ringAnchor.style.width=origW+'px';
+        ringAnchor.style.height=origH+'px';
+        dim.classList.remove('show');
+
+        // STEP 4: restore to normal flow after returning
         setTimeout(()=>{
-          // fly back
-          pill.classList.remove('show');
-          piece.style.transition='transform .48s cubic-bezier(.4,0,.6,1), opacity .32s ease';
-          piece.style.transform=`translate(${ox}px,${oy}px) scale(1)`;
-          dim.classList.remove('show');
+          ringAnchor.classList.remove('animating');
+          ringAnchor.style.top='';
+          ringAnchor.style.left='';
+          ringAnchor.style.width='';
+          ringAnchor.style.height='';
+          ringAnchor.style.transition='';
+          dim.style.display='none';
+          // now update the display text
+          const data2=ld();
+          const sk2=data2.skills.find(s=>s.id===skillId);
+          if(sk2) renderDetail(sk2);
+        },520);
 
-          setTimeout(()=>{
-            piece.style.opacity='0';
-            setTimeout(()=>{
-              overlay.classList.remove('active');
-              segNew.style.transition='none';
-            },300);
-          },420);
-        },1100);
-      },580);
-    },240);
+      },1200); // hold time at center
+    },560); // wait for ring to arrive at center
   }));
 }
 
