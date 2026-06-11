@@ -209,7 +209,14 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
 .heatmap-legend{display:flex;align-items:center;gap:4px;margin-top:8px;justify-content:flex-end}
 .heatmap-legend span{font-size:10px;color:var(--text3)}
 
-/* ── MILESTONE TIMELINE ── */
+/* ── ASPIRATIONS ── */
+.aspiration-item{display:flex;align-items:center;gap:10px;padding:12px 16px;margin:0 16px 8px;cursor:pointer;transition:transform .15s}
+.aspiration-item:active{transform:scale(.98)}
+.aspiration-dot{width:8px;height:8px;border-radius:50%;border:2px solid var(--text3);flex-shrink:0}
+.aspiration-text{flex:1;font-size:14px;color:var(--text);line-height:1.4}
+.aspiration-edit{font-size:13px;color:var(--text3);padding:4px;background:none;border:none;cursor:pointer;font-family:var(--sans)}
+
+/* ── TIMELINE (stats) ── */
 .timeline-wrap{padding:0 16px 0}
 .timeline-title{font-size:12px;font-weight:500;color:var(--text2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:14px;padding:0 0 0 0}
 .timeline-item{display:flex;gap:12px;margin-bottom:0;position:relative}
@@ -383,6 +390,12 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
     </div>
     <div class="section-hd" style="padding-top:4px"><h3>Sessions</h3></div>
     <div id="sessions-list"></div>
+    <div class="section-hd" style="padding-top:8px">
+      <h3>Aspirations</h3>
+      <button class="btn btn-sm btn-outline" onclick="openAddAspiration()">+ Add</button>
+    </div>
+    <div id="aspirations-list"></div>
+    <div style="height:8px"></div>
   </div>
 
   <!-- LIBRARY -->
@@ -484,18 +497,39 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
 </div>
 
 <div class="overlay" id="overlay-milestone-add">
-  <div class="sheet"><div class="sheet-handle"></div><div class="sheet-title">Add milestone</div>
-  <div class="field"><label>Milestone</label><input type="text" id="milestone-input" placeholder="e.g. Complete first chord progression"></div>
+  <div class="sheet"><div class="sheet-handle"></div><div class="sheet-title">Add aspiration</div>
+  <div class="field"><label>What do you want to achieve?</label><input type="text" id="milestone-input" placeholder="e.g. Complete first chord progression"></div>
   <button class="btn btn-primary btn-full" onclick="confirmAddMilestone()">Add</button>
   <div style="height:10px"></div><button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-milestone-add')">Cancel</button></div>
 </div>
 
+<div class="overlay" id="overlay-aspiration-edit">
+  <div class="sheet"><div class="sheet-handle"></div><div class="sheet-title">Edit aspiration</div>
+  <div class="field"><label>Aspiration</label><input type="text" id="aspiration-edit-text"></div>
+  <button class="btn btn-primary btn-full" onclick="saveAspiration()">Save</button>
+  <div style="height:10px"></div>
+  <button class="btn btn-secondary btn-full" onclick="logAspiration()">✦ Mark as achieved</button>
+  <div style="height:10px"></div>
+  <button class="btn btn-danger btn-full" onclick="deleteAspiration()">Delete</button>
+  <div style="height:10px"></div>
+  <button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-aspiration-edit')">Cancel</button></div>
+</div>
+
+<div class="overlay" id="overlay-milestone-log">
+  <div class="sheet"><div class="sheet-handle"></div><div class="sheet-title">Log milestone</div>
+  <div class="field"><label>What did you achieve?</label><input type="text" id="milestone-log-text" placeholder="e.g. Played first full song"></div>
+  <div class="field"><label>Date achieved</label><input type="date" id="milestone-log-date"></div>
+  <button class="btn btn-primary btn-full" onclick="confirmLogMilestone()">Log it</button>
+  <div style="height:10px"></div><button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-milestone-log')">Cancel</button></div>
+</div>
+
 <div class="overlay" id="overlay-milestone-edit">
   <div class="sheet"><div class="sheet-handle"></div><div class="sheet-title" id="milestone-edit-title">Milestone</div>
-  <div class="field"><label>Achieved on</label><input type="date" id="milestone-edit-date"></div>
+  <div class="field"><label>What did you achieve?</label><input type="text" id="milestone-edit-text"></div>
+  <div class="field"><label>Date achieved</label><input type="date" id="milestone-edit-date"></div>
   <button class="btn btn-primary btn-full" onclick="saveMilestoneDate()">Save</button>
   <div style="height:10px"></div>
-  <button class="btn btn-danger btn-full" onclick="unmarkMilestone()">Unmark as done</button>
+  <button class="btn btn-danger btn-full" onclick="deleteMilestoneEntry()">Delete entry</button>
   <div style="height:10px"></div>
   <button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-milestone-edit')">Cancel</button></div>
 </div>
@@ -625,6 +659,23 @@ function openDetail(id){
 }
 
 function renderDetail(sk){
+  // migrate old milestones → loggedMilestones + aspirations
+  if(sk.milestones&&sk.milestones.length&&!sk._migrated){
+    if(!sk.loggedMilestones)sk.loggedMilestones=[];
+    if(!sk.aspirations)sk.aspirations=[];
+    sk.milestones.forEach(m=>{
+      if(m.done&&m.doneAt){
+        sk.loggedMilestones.push({text:m.text,at:m.doneAt});
+      } else if(!m.done){
+        sk.aspirations.push({text:m.text});
+      }
+    });
+    sk.milestones=[];
+    sk._migrated=true;
+    const data=ld();
+    const idx=data.skills.findIndex(s=>s.id===sk.id);
+    if(idx>=0){data.skills[idx]=sk;sd(data);}
+  }
   const totalMins=sk.sessions.reduce((s,x)=>s+x.duration,0);
   const pct=Math.min(totalMins/60/sk.goal,1);
   document.getElementById('detail-name').textContent=sk.name;
@@ -633,6 +684,7 @@ function renderDetail(sk){
   document.getElementById('detail-goal-txt').textContent=`Goal: ${sk.goal}h · ${Math.round(pct*100)}%`;
   document.getElementById('detail-ring').style.strokeDashoffset=(263.89*(1-pct)).toFixed(2);
   renderSessions(sk);
+  renderAspirations(sk);
 }
 
 function renderSessions(sk){
@@ -998,98 +1050,212 @@ function buildHeatmap(sk){
   return `<div class="heatmap-wrap glass-card"><div class="heatmap-title">Activity — last 90 days</div>${monthHtml}${cellsHtml}${legendHtml}</div>`;
 }
 
-// ── MILESTONE TIMELINE ──
+// ── TIMELINE (journal: milestones + session notes + auto hour markers) ──
 function buildTimeline(sk){
-  const milestones=sk.milestones||[];
-  const done=milestones.filter(m=>m.done).sort((a,b)=>(b.doneAt||0)-(a.doneAt||0));
-  const todo=milestones.filter(m=>!m.done);
+  const entries=[];
+
+  // 1. logged milestones (new style: sk.loggedMilestones)
+  const logged=sk.loggedMilestones||[];
+  logged.forEach((m,i)=>{
+    entries.push({type:'milestone',ts:m.at,text:m.text,idx:i,skillId:sk.id});
+  });
+
+  // 2. migrate old checked-off milestones into loggedMilestones if not done yet
+  // (handled in data migration below)
+
+  // 3. session notes — only sessions with note or milestone tag, skip undoc
+  const docSessions=sk.sessions.filter(s=>!s.undoc&&s.date&&(s.note||s.milestone));
+  docSessions.forEach(sess=>{
+    entries.push({type:'session',ts:new Date(sess.date).getTime(),sess});
+  });
+
+  // 4. auto hour threshold markers — from documented sessions only
+  const docAll=sk.sessions.filter(s=>!s.undoc&&s.date).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  let cumMins=0;
+  const thresholds=[10,20,30,40,50,60,70,80,90,100];
+  const goalH=sk.goal;
+  const crossed=new Set();
+  docAll.forEach(sess=>{
+    const prevMins=cumMins;
+    cumMins+=sess.duration;
+    thresholds.forEach(h=>{
+      if(h>goalH)return;
+      if(!crossed.has(h)&&prevMins<h*60&&cumMins>=h*60){
+        crossed.add(h);
+        entries.push({type:'threshold',ts:new Date(sess.date).getTime(),hours:h});
+      }
+    });
+  });
+
+  // sort newest first
+  entries.sort((a,b)=>b.ts-a.ts);
 
   let html=`<div class="timeline-wrap">
-    <div class="timeline-title">Milestones</div>`;
+    <div class="timeline-title" style="display:flex;align-items:center;justify-content:space-between">
+      <span>Timeline</span>
+      <button class="tl-add-btn" style="margin:0" onclick="openMilestoneLog('${sk.id}')">+ Log milestone</button>
+    </div>`;
 
-  if(!milestones.length){
-    html+=`<p style="font-size:13px;color:var(--text3);margin-bottom:12px">No milestones yet.</p>`;
+  if(!entries.length){
+    html+=`<p style="font-size:13px;color:var(--text3);padding:8px 0 16px">Nothing here yet. Log sessions with notes or milestones to build your journal.</p>`;
   }
 
-  // done milestones (most recent first)
-  done.forEach((m,i)=>{
-    const idx=sk.milestones.indexOf(m);
-    const dateStr=m.doneAt?new Date(m.doneAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
-    html+=`<div class="timeline-item">
-      <div class="tl-left">
-        <div class="tl-dot done" onclick="toggleMilestoneStats('${sk.id}',${idx})"></div>
-        <div class="tl-line"></div>
-      </div>
-      <div class="tl-right">
-        <div class="tl-text done">${m.text}</div>
-        ${dateStr?`<div class="tl-date">✦ ${dateStr}</div>`:''}
-      </div>
-    </div>`;
+  entries.forEach((e,i)=>{
+    const isLast=i===entries.length-1;
+    if(e.type==='milestone'){
+      const dateStr=new Date(e.ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      html+=`<div class="timeline-item">
+        <div class="tl-left">
+          <div class="tl-dot done" onclick="openMilestoneEntryEdit('${sk.id}',${e.idx})" style="background:var(--grad);border-color:transparent"></div>
+          ${!isLast?'<div class="tl-line"></div>':''}
+        </div>
+        <div class="tl-right">
+          <div class="tl-text" style="font-weight:500">${e.text}</div>
+          <div class="tl-date">✦ ${dateStr}</div>
+        </div>
+      </div>`;
+    } else if(e.type==='session'){
+      const dateStr=new Date(e.ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      const h=Math.floor(e.sess.duration/60),m=e.sess.duration%60;
+      const dur=h>0?`${h}h ${m}m`:`${m}m`;
+      html+=`<div class="timeline-item">
+        <div class="tl-left">
+          <div class="tl-dot" style="border-color:var(--a);background:rgba(79,126,255,.12)"></div>
+          ${!isLast?'<div class="tl-line"></div>':''}
+        </div>
+        <div class="tl-right">
+          ${e.sess.milestone?`<div style="font-size:12px;color:var(--a);font-weight:500;margin-bottom:2px">✦ ${e.sess.milestone}</div>`:''}
+          <div class="tl-text">${e.sess.note||''}</div>
+          <div class="tl-date" style="color:var(--text3)">${dateStr} · ${dur}</div>
+        </div>
+      </div>`;
+    } else if(e.type==='threshold'){
+      const dateStr=new Date(e.ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      html+=`<div class="timeline-item">
+        <div class="tl-left">
+          <div class="tl-dot" style="border-color:var(--b);background:rgba(123,110,250,.12);font-size:8px;font-weight:700;color:var(--b);display:flex;align-items:center;justify-content:center">${e.hours}</div>
+          ${!isLast?'<div class="tl-line"></div>':''}
+        </div>
+        <div class="tl-right">
+          <div class="tl-text" style="color:var(--b);font-weight:500">${e.hours} hours reached</div>
+          <div class="tl-date" style="color:var(--text3)">${dateStr}</div>
+        </div>
+      </div>`;
+    }
   });
 
-  // upcoming milestones
-  todo.forEach((m,i)=>{
-    const idx=sk.milestones.indexOf(m);
-    html+=`<div class="timeline-item">
-      <div class="tl-left">
-        <div class="tl-dot" onclick="toggleMilestoneStats('${sk.id}',${idx})"></div>
-        ${i<todo.length-1?'<div class="tl-line"></div>':''}
-      </div>
-      <div class="tl-right">
-        <div class="tl-text">${m.text}</div>
-        <div class="tl-upcoming">upcoming</div>
-      </div>
-    </div>`;
-  });
-
-  html+=`<button class="tl-add-btn" onclick="openMilestoneAdd('${sk.id}')">+ Add milestone</button>`;
   html+=`</div>`;
   return html;
 }
 
-let editMilestoneSkillId=null, editMilestoneIdx=null;
-
-function toggleMilestoneStats(skillId,idx){
-  const data=ld();const sk=data.skills.find(s=>s.id===skillId);
-  const m=sk.milestones[idx];
-  if(m.done){
-    // already done — open edit sheet to change date or unmark
-    openMilestoneEdit(skillId,idx);
-  } else {
-    // mark done with today, then open edit sheet to adjust date
-    m.done=true;
-    m.doneAt=Date.now();
-    sd(data);
-    showToast('✦ Milestone reached!');
-    renderStats();
-    openMilestoneEdit(skillId,idx);
+// ── ASPIRATION FUNCTIONS ──
+function renderAspirations(sk){
+  const list=document.getElementById('aspirations-list');
+  if(!list)return;
+  const aspirations=sk.aspirations||[];
+  list.innerHTML='';
+  if(!aspirations.length){
+    list.innerHTML=`<div style="padding:8px 20px 12px;font-size:13px;color:var(--text3)">No aspirations yet. Add things you want to achieve.</div>`;
+    return;
   }
+  aspirations.forEach((a,i)=>{
+    const el=document.createElement('div');
+    el.className='aspiration-item glass-card';
+    el.innerHTML=`
+      <div class="aspiration-dot"></div>
+      <div class="aspiration-text">${a.text}</div>
+      <button class="aspiration-edit" onclick="openEditAspiration(${i});event.stopPropagation()">✎</button>
+    `;
+    el.onclick=()=>openEditAspiration(i);
+    list.appendChild(el);
+  });
 }
 
-function openMilestoneEdit(skillId,idx){
+let editAspirationIdx=null;
+function openAddAspiration(){
+  document.getElementById('milestone-input').value='';
+  milestoneAddSkillId=currentSkillId;
+  openOverlay('overlay-milestone-add');
+}
+function confirmAddMilestone(){
+  const text=document.getElementById('milestone-input').value.trim();if(!text)return;
+  const data=ld();const sk=data.skills.find(s=>s.id===milestoneAddSkillId);
+  if(!sk.aspirations)sk.aspirations=[];
+  sk.aspirations.push({text});
+  sd(data);closeOverlay('overlay-milestone-add');
+  renderDetail(sk);showToast('Aspiration added');
+}
+function openEditAspiration(idx){
+  editAspirationIdx=idx;
+  const data=ld();const sk=data.skills.find(s=>s.id===currentSkillId);
+  document.getElementById('aspiration-edit-text').value=(sk.aspirations||[])[idx].text;
+  openOverlay('overlay-aspiration-edit');
+}
+function saveAspiration(){
+  const text=document.getElementById('aspiration-edit-text').value.trim();if(!text)return;
+  const data=ld();const sk=data.skills.find(s=>s.id===currentSkillId);
+  sk.aspirations[editAspirationIdx].text=text;
+  sd(data);closeOverlay('overlay-aspiration-edit');renderDetail(sk);showToast('Updated');
+}
+function logAspiration(){
+  const text=document.getElementById('aspiration-edit-text').value.trim();
+  closeOverlay('overlay-aspiration-edit');
+  // pre-fill the milestone log sheet with this text
+  document.getElementById('milestone-log-text').value=text;
+  document.getElementById('milestone-log-date').value=new Date().toISOString().split('T')[0];
+  milestoneLogSkillId=currentSkillId;
+  openOverlay('overlay-milestone-log');
+}
+function deleteAspiration(){
+  const data=ld();const sk=data.skills.find(s=>s.id===currentSkillId);
+  sk.aspirations.splice(editAspirationIdx,1);
+  sd(data);closeOverlay('overlay-aspiration-edit');renderDetail(sk);showToast('Deleted');
+}
+
+// ── MILESTONE LOG (from stats or aspiration) ──
+let milestoneLogSkillId=null;
+function openMilestoneLog(skillId){
+  milestoneLogSkillId=skillId;
+  document.getElementById('milestone-log-text').value='';
+  document.getElementById('milestone-log-date').value=new Date().toISOString().split('T')[0];
+  openOverlay('overlay-milestone-log');
+}
+function confirmLogMilestone(){
+  const text=document.getElementById('milestone-log-text').value.trim();
+  const dateVal=document.getElementById('milestone-log-date').value;
+  if(!text){showToast('Add a description');return;}
+  if(!dateVal){showToast('Pick a date');return;}
+  const data=ld();const sk=data.skills.find(s=>s.id===milestoneLogSkillId);
+  if(!sk.loggedMilestones)sk.loggedMilestones=[];
+  sk.loggedMilestones.push({text,at:new Date(dateVal).getTime()});
+  sd(data);closeOverlay('overlay-milestone-log');renderStats();showToast('✦ Milestone logged!');
+}
+
+// ── MILESTONE ENTRY EDIT (from timeline) ──
+let editMilestoneSkillId=null, editMilestoneIdx=null;
+function openMilestoneEntryEdit(skillId,idx){
   editMilestoneSkillId=skillId;
   editMilestoneIdx=idx;
   const data=ld();const sk=data.skills.find(s=>s.id===skillId);
-  const m=sk.milestones[idx];
-  document.getElementById('milestone-edit-title').textContent=m.text;
-  const dateVal=m.doneAt?new Date(m.doneAt).toISOString().split('T')[0]:new Date().toISOString().split('T')[0];
-  document.getElementById('milestone-edit-date').value=dateVal;
+  const m=(sk.loggedMilestones||[])[idx];
+  document.getElementById('milestone-edit-title').textContent='Edit milestone';
+  document.getElementById('milestone-edit-text').value=m.text;
+  document.getElementById('milestone-edit-date').value=new Date(m.at).toISOString().split('T')[0];
   openOverlay('overlay-milestone-edit');
 }
-
 function saveMilestoneDate(){
+  const text=document.getElementById('milestone-edit-text').value.trim();
   const dateVal=document.getElementById('milestone-edit-date').value;
-  if(!dateVal){showToast('Pick a date');return;}
+  if(!text||!dateVal){showToast('Fill all fields');return;}
   const data=ld();const sk=data.skills.find(s=>s.id===editMilestoneSkillId);
-  sk.milestones[editMilestoneIdx].doneAt=new Date(dateVal).getTime();
-  sd(data);closeOverlay('overlay-milestone-edit');renderStats();showToast('Date saved');
+  sk.loggedMilestones[editMilestoneIdx].text=text;
+  sk.loggedMilestones[editMilestoneIdx].at=new Date(dateVal).getTime();
+  sd(data);closeOverlay('overlay-milestone-edit');renderStats();showToast('Updated');
 }
-
-function unmarkMilestone(){
+function deleteMilestoneEntry(){
   const data=ld();const sk=data.skills.find(s=>s.id===editMilestoneSkillId);
-  sk.milestones[editMilestoneIdx].done=false;
-  sk.milestones[editMilestoneIdx].doneAt=null;
-  sd(data);closeOverlay('overlay-milestone-edit');renderStats();showToast('Milestone unmarked');
+  sk.loggedMilestones.splice(editMilestoneIdx,1);
+  sd(data);closeOverlay('overlay-milestone-edit');renderStats();showToast('Deleted');
 }
 
 let milestoneAddSkillId=null;
@@ -1097,13 +1263,6 @@ function openMilestoneAdd(skillId){
   milestoneAddSkillId=skillId;
   document.getElementById('milestone-input').value='';
   openOverlay('overlay-milestone-add');
-}
-function confirmAddMilestone(){
-  const text=document.getElementById('milestone-input').value.trim();if(!text)return;
-  const data=ld();const sk=data.skills.find(s=>s.id===milestoneAddSkillId);
-  sk.milestones.push({text,done:false,doneAt:null});
-  sd(data);closeOverlay('overlay-milestone-add');
-  renderStats();showToast('Milestone added');
 }
 
 // ══ SWIPER ══
