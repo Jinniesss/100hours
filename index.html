@@ -458,8 +458,9 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
 
 <div class="overlay" id="overlay-session">
   <div class="sheet"><div class="sheet-handle"></div><div class="sheet-title">Session</div>
-  <div id="session-detail-content"></div>
-  <div class="field" style="margin-top:12px"><label>Note</label><textarea id="session-edit-note" placeholder="What did you accomplish?"></textarea></div>
+  <div class="field"><label>Duration (minutes)</label><input type="number" id="session-edit-dur" min="1"></div>
+  <div class="field"><label>Date (optional)</label><input type="date" id="session-edit-date"></div>
+  <div class="field"><label>Note</label><textarea id="session-edit-note" placeholder="What did you accomplish?"></textarea></div>
   <div class="field"><label>Milestone reached?</label><input type="text" id="session-edit-milestone" placeholder="e.g. Played first full song"></div>
   <button class="btn btn-primary btn-full" onclick="saveSessionNote()">Save</button>
   <div style="height:10px"></div><button class="btn btn-danger btn-full" onclick="deleteSession()">Delete session</button>
@@ -487,6 +488,16 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
   <div class="field"><label>Milestone</label><input type="text" id="milestone-input" placeholder="e.g. Complete first chord progression"></div>
   <button class="btn btn-primary btn-full" onclick="confirmAddMilestone()">Add</button>
   <div style="height:10px"></div><button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-milestone-add')">Cancel</button></div>
+</div>
+
+<div class="overlay" id="overlay-milestone-edit">
+  <div class="sheet"><div class="sheet-handle"></div><div class="sheet-title" id="milestone-edit-title">Milestone</div>
+  <div class="field"><label>Achieved on</label><input type="date" id="milestone-edit-date"></div>
+  <button class="btn btn-primary btn-full" onclick="saveMilestoneDate()">Save</button>
+  <div style="height:10px"></div>
+  <button class="btn btn-danger btn-full" onclick="unmarkMilestone()">Unmark as done</button>
+  <div style="height:10px"></div>
+  <button class="btn btn-outline btn-full" onclick="closeOverlay('overlay-milestone-edit')">Cancel</button></div>
 </div>
 
 <div class="overlay" id="overlay-archived">
@@ -771,19 +782,23 @@ function openSessionDetail(idx){
   currentSessionIdx=idx;
   const data=ld();const sk=data.skills.find(s=>s.id===currentSkillId);
   const sess=sk.sessions[idx];
-  const h=Math.floor(sess.duration/60),m=sess.duration%60;
-  const dur=h>0?`${h}h ${m}m`:`${m}m`;
-  const date=sess.date?new Date(sess.date).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):'No date';
-  document.getElementById('session-detail-content').innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:12px"><div style="font-size:24px;font-weight:500">${dur}</div><div style="color:var(--text2);font-size:13px;align-self:center">${date}</div></div>`;
+  document.getElementById('session-edit-dur').value=sess.duration;
+  document.getElementById('session-edit-date').value=sess.date?new Date(sess.date).toISOString().split('T')[0]:'';
   document.getElementById('session-edit-note').value=sess.note||'';
   document.getElementById('session-edit-milestone').value=sess.milestone||'';
   openOverlay('overlay-session');
 }
 function saveSessionNote(){
   const data=ld();const sk=data.skills.find(s=>s.id===currentSkillId);
-  sk.sessions[currentSessionIdx].note=document.getElementById('session-edit-note').value.trim();
-  sk.sessions[currentSessionIdx].milestone=document.getElementById('session-edit-milestone').value.trim();
-  sd(data);closeOverlay('overlay-session');renderDetail(sk);showToast('Updated');
+  const sess=sk.sessions[currentSessionIdx];
+  const newDur=parseInt(document.getElementById('session-edit-dur').value);
+  if(!newDur||newDur<1){showToast('Enter a valid duration');return;}
+  const dateVal=document.getElementById('session-edit-date').value;
+  sess.duration=newDur;
+  sess.date=dateVal?new Date(dateVal).toISOString():sess.date;
+  sess.note=document.getElementById('session-edit-note').value.trim();
+  sess.milestone=document.getElementById('session-edit-milestone').value.trim();
+  sd(data);closeOverlay('overlay-session');renderDetail(sk);renderHome();showToast('Session updated');
 }
 function deleteSession(){
   if(!confirm('Delete this session?'))return;
@@ -1032,13 +1047,49 @@ function buildTimeline(sk){
   return html;
 }
 
+let editMilestoneSkillId=null, editMilestoneIdx=null;
+
 function toggleMilestoneStats(skillId,idx){
   const data=ld();const sk=data.skills.find(s=>s.id===skillId);
-  sk.milestones[idx].done=!sk.milestones[idx].done;
-  sk.milestones[idx].doneAt=sk.milestones[idx].done?Date.now():null;
-  sd(data);
-  if(sk.milestones[idx].done)showToast('✦ Milestone reached!');
-  renderStats();
+  const m=sk.milestones[idx];
+  if(m.done){
+    // already done — open edit sheet to change date or unmark
+    openMilestoneEdit(skillId,idx);
+  } else {
+    // mark done with today, then open edit sheet to adjust date
+    m.done=true;
+    m.doneAt=Date.now();
+    sd(data);
+    showToast('✦ Milestone reached!');
+    renderStats();
+    openMilestoneEdit(skillId,idx);
+  }
+}
+
+function openMilestoneEdit(skillId,idx){
+  editMilestoneSkillId=skillId;
+  editMilestoneIdx=idx;
+  const data=ld();const sk=data.skills.find(s=>s.id===skillId);
+  const m=sk.milestones[idx];
+  document.getElementById('milestone-edit-title').textContent=m.text;
+  const dateVal=m.doneAt?new Date(m.doneAt).toISOString().split('T')[0]:new Date().toISOString().split('T')[0];
+  document.getElementById('milestone-edit-date').value=dateVal;
+  openOverlay('overlay-milestone-edit');
+}
+
+function saveMilestoneDate(){
+  const dateVal=document.getElementById('milestone-edit-date').value;
+  if(!dateVal){showToast('Pick a date');return;}
+  const data=ld();const sk=data.skills.find(s=>s.id===editMilestoneSkillId);
+  sk.milestones[editMilestoneIdx].doneAt=new Date(dateVal).getTime();
+  sd(data);closeOverlay('overlay-milestone-edit');renderStats();showToast('Date saved');
+}
+
+function unmarkMilestone(){
+  const data=ld();const sk=data.skills.find(s=>s.id===editMilestoneSkillId);
+  sk.milestones[editMilestoneIdx].done=false;
+  sk.milestones[editMilestoneIdx].doneAt=null;
+  sd(data);closeOverlay('overlay-milestone-edit');renderStats();showToast('Milestone unmarked');
 }
 
 let milestoneAddSkillId=null;
