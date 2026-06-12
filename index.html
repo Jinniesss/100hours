@@ -178,9 +178,9 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
 .lib-desc{font-size:11px;color:var(--text2);margin-top:4px;line-height:1.45}
 
 /* ── STATS SWIPER ── */
-.stats-swiper-wrap{overflow:hidden;position:relative}
-.stats-swiper{display:flex;transition:transform .4s cubic-bezier(.4,0,.2,1);will-change:transform}
-.stats-slide{min-width:100%;padding:0 16px 24px;flex-shrink:0}
+.stats-swiper-wrap{overflow:hidden;position:relative;width:100%}
+.stats-swiper{display:flex;transition:transform .4s cubic-bezier(.4,0,.2,1);will-change:transform;width:100%}
+.stats-slide{width:100%;min-width:100%;max-width:100%;padding:0 16px 24px;flex-shrink:0;box-sizing:border-box}
 
 /* skill indicator dots */
 .swipe-dots{display:flex;justify-content:center;gap:6px;padding:8px 0 4px}
@@ -1385,7 +1385,7 @@ function playSegmentAnim(skillId, oldMins, newMins){
   counter.style.cssText='position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s ease;';
   const pctEl=document.createElement('div');
   pctEl.style.cssText='font-size:42px;font-weight:300;font-family:Inter,sans-serif;background:linear-gradient(135deg,#4F7EFF,#7B6EFA);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-variant-numeric:tabular-nums;line-height:1;letter-spacing:-1px;';
-  pctEl.textContent=Math.round(oldPct*100)+'%';
+  pctEl.textContent=(oldPct*100).toFixed(3)+'%';
   counter.appendChild(pctEl);
   clone.appendChild(counter);
 
@@ -1416,7 +1416,7 @@ function playSegmentAnim(skillId, oldMins, newMins){
       (function tick(now){
         const t=Math.min((now-t0)/dur,1);
         const e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
-        pctEl.textContent=Math.round(oldPct*100+(newPct-oldPct)*100*e)+'%';
+        pctEl.textContent=(oldPct*100+(newPct-oldPct)*100*e).toFixed(3)+'%';
         if(t<1) requestAnimationFrame(tick);
       })(performance.now());
 
