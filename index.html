@@ -74,7 +74,7 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
 /* ── LOGO ── */
 .logo{display:inline-flex;align-items:baseline;gap:0;cursor:default;user-select:none;position:relative}
 .logo-text{font-size:22px;font-weight:400;letter-spacing:-.5px;color:var(--text);line-height:1;font-family:'IBM Plex Mono','Courier New',monospace}
-.logo-ring-wrap{width:19px;height:19px;display:inline-block;position:relative;top:3px;margin:0 -1px}
+.logo-ring-wrap{width:19px;height:19px;display:inline-block;position:relative;top:3px;margin:0 -2px 0 -1px}
 .logo-ring-wrap svg{width:19px;height:19px;transform:rotate(-90deg);display:block}
 .logo-ring-bg{fill:none;stroke:var(--text3);stroke-width:2.4;opacity:.4}
 .logo-ring-arc{fill:none;stroke:url(#logoGrad);stroke-width:2.4;stroke-linecap:round;stroke-dasharray:36;stroke-dashoffset:19}
@@ -1142,9 +1142,9 @@ function buildTimeline(sk){
     const isLast=i===entries.length-1;
     if(e.type==='milestone'){
       const dateStr=new Date(e.ts).toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric',year:'numeric'});
-      html+=`<div class="timeline-item">
+      html+=`<div class="timeline-item" onclick="openMilestoneEntryEdit('${sk.id}',${e.idx})" style="cursor:pointer">
         <div class="tl-left">
-          <div class="tl-dot done" onclick="openMilestoneEntryEdit('${sk.id}',${e.idx})" style="background:var(--grad);border-color:transparent"></div>
+          <div class="tl-dot done" style="background:var(--grad);border-color:transparent;flex-shrink:0"></div>
           ${!isLast?'<div class="tl-line"></div>':''}
         </div>
         <div class="tl-right">
