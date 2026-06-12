@@ -52,19 +52,9 @@
 input,textarea{-webkit-user-select:text;user-select:text}
 body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;color:var(--text);transition:color .4s}
 
-/* ── BG BLOBS ── */
-.bg-canvas{position:fixed;inset:0;z-index:0;background:var(--bg);transition:background .5s;overflow:hidden}
-.bg-blob{position:absolute;border-radius:50%;filter:blur(72px);opacity:.5;animation:blobDrift 18s ease-in-out infinite alternate}
-.bg-blob:nth-child(1){width:440px;height:440px;top:-100px;left:-80px;background:radial-gradient(circle,#c7d4ff,#d4c8ff);animation-duration:16s}
-.bg-blob:nth-child(2){width:360px;height:360px;top:28%;right:-60px;background:radial-gradient(circle,#b8ccff,#cac0ff);animation-duration:21s;animation-delay:-7s}
-.bg-blob:nth-child(3){width:300px;height:300px;bottom:12%;left:8%;background:radial-gradient(circle,#d0d8ff,#bfc8ff);animation-duration:14s;animation-delay:-11s}
-.bg-blob:nth-child(4){width:260px;height:260px;bottom:22%;right:4%;background:radial-gradient(circle,#c0d4ff,#d4caff);animation-duration:23s;animation-delay:-5s}
-@keyframes blobDrift{0%{transform:translate(0,0) scale(1)}33%{transform:translate(28px,-18px) scale(1.06)}66%{transform:translate(-18px,28px) scale(.96)}100%{transform:translate(12px,8px) scale(1.03)}}
-[data-theme="dark"] .bg-blob{opacity:.2}
-[data-theme="dark"] .bg-blob:nth-child(1){background:radial-gradient(circle,#1a2050,#12183a)}
-[data-theme="dark"] .bg-blob:nth-child(2){background:radial-gradient(circle,#0e1840,#1a1440)}
-[data-theme="dark"] .bg-blob:nth-child(3){background:radial-gradient(circle,#141c48,#0e1430)}
-[data-theme="dark"] .bg-blob:nth-child(4){background:radial-gradient(circle,#101840,#181240)}
+/* ── DYNAMIC BACKGROUND ── */
+#bg-canvas{position:fixed;inset:0;z-index:0;width:100%;height:100%}
+#ripple-canvas{position:fixed;inset:0;z-index:0;width:100%;height:100%;pointer-events:none}
 
 #app{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:0 0 calc(84px + var(--safe-bot))}
 
@@ -312,7 +302,8 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
 </style>
 </head>
 <body>
-<div class="bg-canvas"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
+<canvas id="bg-canvas"></canvas>
+<canvas id="ripple-canvas"></canvas>
 
 <svg width="0" height="0" style="position:absolute;overflow:hidden">
   <defs>
@@ -770,6 +761,9 @@ function stopTimer(){
   sk.sessions.push({id:Date.now(),duration:mins,date:new Date().toISOString(),note:'',milestone:'',ts:Date.now(),undoc:false});
   sd(data);stopTimerSilent();renderHome();
   showToast(`Session saved — ${mins} min`);
+  // ripple from ring position
+  const ringEl=document.getElementById('detail-ring-anchor');
+  if(ringEl&&window.triggerRipple){const rc=ringEl.getBoundingClientRect();window.triggerRipple(rc.left+rc.width/2,rc.top+rc.height/2);}
   setTimeout(()=>playSegmentAnim(currentSkillId,oldMins,oldMins+mins),350);
 }
 function stopTimerSilent(){
@@ -816,6 +810,8 @@ function confirmManualLog(){
     sk.sessions.push({id:Date.now(),duration:dur,date:dateVal?new Date(dateVal).toISOString():null,note:document.getElementById('manual-note').value.trim(),milestone:document.getElementById('manual-milestone').value.trim(),ts:Date.now(),undoc:false});
     sd(data);closeOverlay('overlay-manual');renderHome();
     showToast('Session logged');
+    const re=document.getElementById('detail-ring-anchor');
+    if(re&&window.triggerRipple){const rc=re.getBoundingClientRect();window.triggerRipple(rc.left+rc.width/2,rc.top+rc.height/2);}
     setTimeout(()=>playSegmentAnim(currentSkillId,oldMins,oldMins+dur),350);
   } else {
     const hrs=parseFloat(document.getElementById('undoc-hours').value);
@@ -824,6 +820,8 @@ function confirmManualLog(){
     sk.sessions.push({id:Date.now(),duration:mins,date:null,note:'',milestone:'',ts:Date.now(),undoc:true});
     sd(data);closeOverlay('overlay-manual');renderHome();
     showToast(`${hrs}h added`);
+    const re2=document.getElementById('detail-ring-anchor');
+    if(re2&&window.triggerRipple){const rc=re2.getBoundingClientRect();window.triggerRipple(rc.left+rc.width/2,rc.top+rc.height/2);}
     setTimeout(()=>playSegmentAnim(currentSkillId,oldMins,oldMins+mins),350);
   }
 }
@@ -1511,6 +1509,133 @@ renderHome();
 // prevent pinch zoom — iOS Safari ignores the meta tag
 document.addEventListener('touchmove',function(e){if(e.touches.length>1)e.preventDefault();},{passive:false});
 document.addEventListener('gesturestart',function(e){e.preventDefault();},{passive:false});
+
+// ══ LIQUID GRADIENT BACKGROUND ══
+(function(){
+  const canvas=document.getElementById('bg-canvas');
+  const rippleCanvas=document.getElementById('ripple-canvas');
+  const ctx=canvas.getContext('2d');
+  const rCtx=rippleCanvas.getContext('2d');
+
+  function resize(){
+    canvas.width=rippleCanvas.width=window.innerWidth;
+    canvas.height=rippleCanvas.height=window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize',resize);
+
+  const lightPalette=[
+    [218,226,255],[200,215,255],[235,215,255],[208,228,255],
+    [240,220,255],[195,218,255],[228,210,255],[212,232,255]
+  ];
+  const darkPalette=[
+    [14,18,45],[10,20,55],[20,14,45],[8,18,50],
+    [18,12,48],[12,22,52],[16,10,44],[10,16,46]
+  ];
+
+  const points=[
+    {x:0.2,y:0.2,vx:0.00028,vy:0.00018,ci:0},
+    {x:0.8,y:0.1,vx:-0.00018,vy:0.00026,ci:2},
+    {x:0.1,y:0.8,vx:0.00022,vy:-0.00028,ci:4},
+    {x:0.7,y:0.7,vx:-0.00026,vy:-0.00020,ci:6},
+  ];
+
+  let t=0;
+  function lerp(a,b,f){return a+(b-a)*f;}
+  function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
+  function getPal(){return document.documentElement.getAttribute('data-theme')==='dark'?darkPalette:lightPalette;}
+
+  function getColor(pt){
+    const pal=getPal();
+    const a=pal[pt.ci%pal.length];
+    const b=pal[(pt.ci+1)%pal.length];
+    const f=(Math.sin(t*0.00025+pt.ci*1.4)+1)/2;
+    return [lerp(a[0],b[0],f),lerp(a[1],b[1],f),lerp(a[2],b[2],f)];
+  }
+
+  function drawBgFast(){
+    const scale=5;
+    const W=Math.ceil(canvas.width/scale);
+    const H=Math.ceil(canvas.height/scale);
+    const off=document.createElement('canvas');
+    off.width=W;off.height=H;
+    const oc=off.getContext('2d');
+    const img=oc.createImageData(W,H);
+    const d=img.data;
+    t++;
+
+    points.forEach(p=>{
+      p.x+=p.vx*(1+Math.sin(t*0.0009)*0.5);
+      p.y+=p.vy*(1+Math.cos(t*0.0011)*0.5);
+      if(p.x<0||p.x>1)p.vx*=-1;
+      if(p.y<0||p.y>1)p.vy*=-1;
+      p.x=clamp(p.x,0,1);p.y=clamp(p.y,0,1);
+    });
+
+    const cols=points.map(p=>getColor(p));
+
+    for(let py=0;py<H;py++){
+      for(let px=0;px<W;px++){
+        const ux=px/W,uy=py/H;
+        let sw=0,r=0,g=0,b=0;
+        points.forEach((p,i)=>{
+          const dx=ux-p.x,dy=uy-p.y;
+          const w=1/(dx*dx+dy*dy+0.035);
+          sw+=w;r+=cols[i][0]*w;g+=cols[i][1]*w;b+=cols[i][2]*w;
+        });
+        const idx=(py*W+px)*4;
+        d[idx]  =clamp(r/sw,0,255);
+        d[idx+1]=clamp(g/sw,0,255);
+        d[idx+2]=clamp(b/sw,0,255);
+        d[idx+3]=255;
+      }
+    }
+    oc.putImageData(img,0,0);
+    ctx.save();
+    ctx.imageSmoothingEnabled=true;
+    ctx.imageSmoothingQuality='high';
+    ctx.drawImage(off,0,0,canvas.width,canvas.height);
+    ctx.restore();
+  }
+
+  let lastBg=0;
+  function animateBg(now){
+    if(now-lastBg>40){drawBgFast();lastBg=now;}
+    requestAnimationFrame(animateBg);
+  }
+  requestAnimationFrame(animateBg);
+
+  // ── RIPPLE ──
+  const ripples=[];
+  window.triggerRipple=function(x,y){
+    ripples.push({x,y,maxR:Math.max(window.innerWidth,window.innerHeight)*0.85,born:performance.now()});
+  };
+
+  function drawRipples(){
+    rCtx.clearRect(0,0,rippleCanvas.width,rippleCanvas.height);
+    const now=performance.now();
+    for(let i=ripples.length-1;i>=0;i--){
+      const rp=ripples[i];
+      const progress=Math.min((now-rp.born)/1800,1);
+      if(progress>=1){ripples.splice(i,1);continue;}
+      const eased=1-Math.pow(1-progress,3);
+      const r=rp.maxR*eased;
+      const alpha=0.5*(1-progress);
+      const grad=rCtx.createRadialGradient(rp.x,rp.y,r*0.5,rp.x,rp.y,r);
+      grad.addColorStop(0,'rgba(255,255,255,0)');
+      grad.addColorStop(0.65,`rgba(180,200,255,${alpha*0.35})`);
+      grad.addColorStop(0.88,`rgba(140,160,255,${alpha})`);
+      grad.addColorStop(1,'rgba(255,255,255,0)');
+      rCtx.beginPath();
+      rCtx.arc(rp.x,rp.y,r,0,Math.PI*2);
+      rCtx.fillStyle=grad;
+      rCtx.fill();
+    }
+    requestAnimationFrame(drawRipples);
+  }
+  requestAnimationFrame(drawRipples);
+})();
+
 </script>
 </body>
 </html>
