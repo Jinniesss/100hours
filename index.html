@@ -403,6 +403,12 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
   <div id="screen-library" class="screen">
     <div class="header">
       <div class="logo"><span class="logo-text">h</span><div class="logo-ring-wrap"><svg viewBox="0 0 20 20"><circle class="logo-ring-bg" cx="10" cy="10" r="6"/><circle class="logo-ring-arc" cx="10" cy="10" r="6"/></svg></div><span class="logo-text">ur</span><span class="logo-super">100</span></div>
+      <div class="header-actions">
+        <button class="btn-icon btn" onclick="showArchived()" style="width:34px;height:34px" title="Archived">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M21 8v13H3V8"/><path d="M23 3H1v5h22V3z"/><path d="M10 12h4"/></svg>
+        </button>
+        <button class="theme-toggle" onclick="toggleTheme()"></button>
+      </div>
     </div>
     <div class="library-grid" id="library-grid"></div>
     <div class="spacer"></div>
@@ -414,6 +420,12 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
   <div id="screen-stats" class="screen">
     <div class="header">
       <div class="logo"><span class="logo-text">h</span><div class="logo-ring-wrap"><svg viewBox="0 0 20 20"><circle class="logo-ring-bg" cx="10" cy="10" r="6"/><circle class="logo-ring-arc" cx="10" cy="10" r="6"/></svg></div><span class="logo-text">ur</span><span class="logo-super">100</span></div>
+      <div class="header-actions">
+        <button class="btn-icon btn" onclick="showArchived()" style="width:34px;height:34px" title="Archived">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M21 8v13H3V8"/><path d="M23 3H1v5h22V3z"/><path d="M10 12h4"/></svg>
+        </button>
+        <button class="theme-toggle" onclick="toggleTheme()"></button>
+      </div>
     </div>
     <div class="swipe-dots" id="swipe-dots"></div>
     <div class="stats-swiper-wrap" id="stats-swiper-wrap">
@@ -988,7 +1000,8 @@ function buildStatSlide(sk){
   const totalHrs=(totalMins/60).toFixed(1);
   const pct=Math.min(totalMins/60/sk.goal*100,100).toFixed(0);
   const docs=sk.sessions.filter(x=>!x.undoc);
-  const avg=docs.length?(totalMins/60/docs.length*60).toFixed(0):'—';
+  const docMins=docs.reduce((s,x)=>s+x.duration,0);
+  const avg=docs.length?(docMins/docs.length).toFixed(0):'—';
 
   return `
     <div class="stat-skill-hd">
@@ -1128,7 +1141,7 @@ function buildTimeline(sk){
   entries.forEach((e,i)=>{
     const isLast=i===entries.length-1;
     if(e.type==='milestone'){
-      const dateStr=new Date(e.ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      const dateStr=new Date(e.ts).toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric',year:'numeric'});
       html+=`<div class="timeline-item">
         <div class="tl-left">
           <div class="tl-dot done" onclick="openMilestoneEntryEdit('${sk.id}',${e.idx})" style="background:var(--grad);border-color:transparent"></div>
@@ -1140,9 +1153,8 @@ function buildTimeline(sk){
         </div>
       </div>`;
     } else if(e.type==='session'){
-      const dateStr=new Date(e.ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-      const h=Math.floor(e.sess.duration/60),m=e.sess.duration%60;
-      const dur=h>0?`${h}h ${m}m`:`${m}m`;
+      const d=new Date(e.ts);
+      const dateStr=d.toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric',year:'numeric'});
       html+=`<div class="timeline-item">
         <div class="tl-left">
           <div class="tl-dot" style="border-color:var(--a);background:rgba(79,126,255,.12)"></div>
@@ -1151,11 +1163,11 @@ function buildTimeline(sk){
         <div class="tl-right">
           ${e.sess.milestone?`<div style="font-size:12px;color:var(--a);font-weight:500;margin-bottom:2px">✦ ${e.sess.milestone}</div>`:''}
           <div class="tl-text">${e.sess.note||''}</div>
-          <div class="tl-date" style="color:var(--text3)">${dateStr} · ${dur}</div>
+          <div class="tl-date" style="color:var(--text3)">${dateStr}</div>
         </div>
       </div>`;
     } else if(e.type==='threshold'){
-      const dateStr=new Date(e.ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      const dateStr=new Date(e.ts).toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric',year:'numeric'});
       html+=`<div class="timeline-item">
         <div class="tl-left">
           <div class="tl-dot" style="border-color:var(--b);background:rgba(123,110,250,.12);font-size:8px;font-weight:700;color:var(--b);display:flex;align-items:center;justify-content:center">${e.hours}</div>
