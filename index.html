@@ -1525,31 +1525,31 @@ document.addEventListener('gesturestart',function(e){e.preventDefault();},{passi
   window.addEventListener('resize',resize);
 
   const lightPalette=[
-    [180,200,255],  // periwinkle blue
-    [220,180,255],  // soft violet
-    [255,200,230],  // blush pink
-    [180,230,255],  // sky blue
-    [200,255,230],  // mint
-    [255,220,200],  // peach
-    [210,185,255],  // lavender
-    [185,240,255],  // aqua
+    [180,195,255],  // bright periwinkle
+    [210,175,255],  // soft violet
+    [155,185,255],  // cornflower blue
+    [225,190,255],  // lilac
+    [165,210,255],  // light blue
+    [200,160,255],  // medium purple
+    [190,220,255],  // pale blue
+    [215,170,255],  // mauve
   ];
   const darkPalette=[
-    [8,15,60],    // deep navy
-    [35,8,55],    // deep purple
-    [55,8,30],    // deep magenta
-    [8,40,55],    // deep teal
-    [20,8,50],    // indigo
-    [45,12,20],   // dark rose
-    [8,30,45],    // dark blue
-    [30,8,45],    // plum
+    [8,12,80],    // bright navy
+    [40,8,80],    // deep purple
+    [8,25,70],    // dark blue
+    [55,10,70],   // vivid purple
+    [10,40,85],   // cobalt
+    [45,5,60],    // dark violet
+    [5,20,75],    // midnight blue
+    [35,12,75],   // indigo
   ];
 
   const points=[
-    {x:0.15,y:0.15,vx:0.0006,vy:0.0004,ci:0},
-    {x:0.85,y:0.1, vx:-0.0005,vy:0.0007,ci:2},
-    {x:0.1, y:0.85,vx:0.0007,vy:-0.0005,ci:4},
-    {x:0.8, y:0.8, vx:-0.0006,vy:-0.0005,ci:6},
+    {x:0.15,y:0.15,vx:0.0005,vy:0.0003,ci:0},
+    {x:0.85,y:0.1, vx:-0.0004,vy:0.0006,ci:2},
+    {x:0.1, y:0.85,vx:0.0006,vy:-0.0004,ci:4},
+    {x:0.8, y:0.8, vx:-0.0005,vy:-0.0004,ci:6},
   ];
 
   let t=0;
@@ -1592,7 +1592,8 @@ document.addEventListener('gesturestart',function(e){e.preventDefault();},{passi
         let sw=0,r=0,g=0,b=0;
         points.forEach((p,i)=>{
           const dx=ux-p.x,dy=uy-p.y;
-          const w=1/(dx*dx+dy*dy+0.008);
+          const dist2=dx*dx+dy*dy;
+          const w=1/(dist2*dist2+0.002);
           sw+=w;r+=cols[i][0]*w;g+=cols[i][1]*w;b+=cols[i][2]*w;
         });
         const idx=(py*W+px)*4;
