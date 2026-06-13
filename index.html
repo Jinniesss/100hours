@@ -1525,19 +1525,31 @@ document.addEventListener('gesturestart',function(e){e.preventDefault();},{passi
   window.addEventListener('resize',resize);
 
   const lightPalette=[
-    [218,226,255],[200,215,255],[235,215,255],[208,228,255],
-    [240,220,255],[195,218,255],[228,210,255],[212,232,255]
+    [180,200,255],  // periwinkle blue
+    [220,180,255],  // soft violet
+    [255,200,230],  // blush pink
+    [180,230,255],  // sky blue
+    [200,255,230],  // mint
+    [255,220,200],  // peach
+    [210,185,255],  // lavender
+    [185,240,255],  // aqua
   ];
   const darkPalette=[
-    [14,18,45],[10,20,55],[20,14,45],[8,18,50],
-    [18,12,48],[12,22,52],[16,10,44],[10,16,46]
+    [8,15,60],    // deep navy
+    [35,8,55],    // deep purple
+    [55,8,30],    // deep magenta
+    [8,40,55],    // deep teal
+    [20,8,50],    // indigo
+    [45,12,20],   // dark rose
+    [8,30,45],    // dark blue
+    [30,8,45],    // plum
   ];
 
   const points=[
-    {x:0.2,y:0.2,vx:0.00028,vy:0.00018,ci:0},
-    {x:0.8,y:0.1,vx:-0.00018,vy:0.00026,ci:2},
-    {x:0.1,y:0.8,vx:0.00022,vy:-0.00028,ci:4},
-    {x:0.7,y:0.7,vx:-0.00026,vy:-0.00020,ci:6},
+    {x:0.15,y:0.15,vx:0.0006,vy:0.0004,ci:0},
+    {x:0.85,y:0.1, vx:-0.0005,vy:0.0007,ci:2},
+    {x:0.1, y:0.85,vx:0.0007,vy:-0.0005,ci:4},
+    {x:0.8, y:0.8, vx:-0.0006,vy:-0.0005,ci:6},
   ];
 
   let t=0;
@@ -1549,7 +1561,7 @@ document.addEventListener('gesturestart',function(e){e.preventDefault();},{passi
     const pal=getPal();
     const a=pal[pt.ci%pal.length];
     const b=pal[(pt.ci+1)%pal.length];
-    const f=(Math.sin(t*0.00025+pt.ci*1.4)+1)/2;
+    const f=(Math.sin(t*0.0008+pt.ci*1.4)+1)/2;
     return [lerp(a[0],b[0],f),lerp(a[1],b[1],f),lerp(a[2],b[2],f)];
   }
 
@@ -1580,7 +1592,7 @@ document.addEventListener('gesturestart',function(e){e.preventDefault();},{passi
         let sw=0,r=0,g=0,b=0;
         points.forEach((p,i)=>{
           const dx=ux-p.x,dy=uy-p.y;
-          const w=1/(dx*dx+dy*dy+0.035);
+          const w=1/(dx*dx+dy*dy+0.008);
           sw+=w;r+=cols[i][0]*w;g+=cols[i][1]*w;b+=cols[i][2]*w;
         });
         const idx=(py*W+px)*4;
