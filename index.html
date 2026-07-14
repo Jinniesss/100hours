@@ -323,7 +323,7 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
   <!-- HOME -->
   <div id="screen-home" class="screen active">
     <div class="header">
-      <div class="logo">
+      <div class="logo" onclick="openSettings()" style="cursor:pointer">
         <span class="logo-text">h</span><div class="logo-ring-wrap"><svg viewBox="0 0 20 20"><circle class="logo-ring-bg" cx="10" cy="10" r="6"/><circle class="logo-ring-arc" cx="10" cy="10" r="6"/></svg></div><span class="logo-text">ur</span><span class="logo-super">100</span>
       </div>
       <div class="header-actions">
@@ -393,7 +393,7 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
   <!-- LIBRARY -->
   <div id="screen-library" class="screen">
     <div class="header">
-      <div class="logo"><span class="logo-text">h</span><div class="logo-ring-wrap"><svg viewBox="0 0 20 20"><circle class="logo-ring-bg" cx="10" cy="10" r="6"/><circle class="logo-ring-arc" cx="10" cy="10" r="6"/></svg></div><span class="logo-text">ur</span><span class="logo-super">100</span></div>
+      <div class="logo" onclick="openSettings()" style="cursor:pointer"><span class="logo-text">h</span><div class="logo-ring-wrap"><svg viewBox="0 0 20 20"><circle class="logo-ring-bg" cx="10" cy="10" r="6"/><circle class="logo-ring-arc" cx="10" cy="10" r="6"/></svg></div><span class="logo-text">ur</span><span class="logo-super">100</span></div>
       <div class="header-actions">
         <button class="btn-icon btn" onclick="showArchived()" style="width:34px;height:34px" title="Archived">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M21 8v13H3V8"/><path d="M23 3H1v5h22V3z"/><path d="M10 12h4"/></svg>
@@ -410,7 +410,7 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
   <!-- STATS -->
   <div id="screen-stats" class="screen">
     <div class="header">
-      <div class="logo"><span class="logo-text">h</span><div class="logo-ring-wrap"><svg viewBox="0 0 20 20"><circle class="logo-ring-bg" cx="10" cy="10" r="6"/><circle class="logo-ring-arc" cx="10" cy="10" r="6"/></svg></div><span class="logo-text">ur</span><span class="logo-super">100</span></div>
+      <div class="logo" onclick="openSettings()" style="cursor:pointer"><span class="logo-text">h</span><div class="logo-ring-wrap"><svg viewBox="0 0 20 20"><circle class="logo-ring-bg" cx="10" cy="10" r="6"/><circle class="logo-ring-arc" cx="10" cy="10" r="6"/></svg></div><span class="logo-text">ur</span><span class="logo-super">100</span></div>
       <div class="header-actions">
         <button class="btn-icon btn" onclick="showArchived()" style="width:34px;height:34px" title="Archived">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M21 8v13H3V8"/><path d="M23 3H1v5h22V3z"/><path d="M10 12h4"/></svg>
@@ -554,6 +554,32 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
 
 <!-- ANIMATION DIM -->
 <div id="anim-dim"></div>
+
+<!-- SETTINGS -->
+<div class="overlay" id="overlay-settings">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="s-title">Settings</div>
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;color:var(--text2);font-weight:500;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em" id="s-lang-label">Language</div>
+      <div style="display:flex;gap:10px">
+        <button id="lang-en-btn" class="btn btn-primary btn-sm" onclick="setLang('en')" style="flex:1">English</button>
+        <button id="lang-zh-btn" class="btn btn-outline btn-sm" onclick="setLang('zh')" style="flex:1">简体中文</button>
+      </div>
+    </div>
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;color:var(--text2);font-weight:500;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em" id="s-theme-label">Appearance</div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-outline btn-sm" onclick="toggleTheme();updateSettingsUI()" style="flex:1" id="s-theme-btn">Toggle theme</button>
+      </div>
+    </div>
+    <div style="height:1px;background:var(--border);margin:4px 0 16px"></div>
+    <div style="text-align:center;font-size:12px;color:var(--text3);line-height:1.8">
+      <div id="s-credit">Developed by Jinnie</div>
+      <div style="margin-top:2px;font-size:11px;opacity:.6">hour · 100</div>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -704,7 +730,7 @@ function renderSessions(sk){
   const docs=sk.sessions.filter(s=>!s.undoc);
   const undocMins=sk.sessions.filter(s=>s.undoc).reduce((a,x)=>a+x.duration,0);
   if(!docs.length&&!undocMins){
-    list.innerHTML=`<div class="empty" style="padding:28px 20px"><p>No sessions yet. Hit Start or log manually.</p></div>`;
+    list.innerHTML=`<div class="empty" style="padding:28px 20px"><p>${t('noSessions')}</p></div>`;
     return;
   }
   if(undocMins){
@@ -760,7 +786,7 @@ function stopTimer(){
   sk.timerStart=null;
   sk.sessions.push({id:Date.now(),duration:mins,date:new Date().toISOString(),note:'',milestone:'',ts:Date.now(),undoc:false});
   sd(data);stopTimerSilent();renderHome();
-  showToast(`Session saved — ${mins} min`);
+  showToast(`${t('sessionSaved')} — ${mins} min`);
   // ripple from ring position
   const ringEl=document.getElementById('detail-ring-anchor');
   if(ringEl&&window.triggerRipple){const rc=ringEl.getBoundingClientRect();window.triggerRipple(rc.left+rc.width/2,rc.top+rc.height/2);}
@@ -809,7 +835,7 @@ function confirmManualLog(){
     const dateVal=document.getElementById('manual-date').value;
     sk.sessions.push({id:Date.now(),duration:dur,date:dateVal?new Date(dateVal).toISOString():null,note:document.getElementById('manual-note').value.trim(),milestone:document.getElementById('manual-milestone').value.trim(),ts:Date.now(),undoc:false});
     sd(data);closeOverlay('overlay-manual');renderHome();
-    showToast('Session logged');
+    showToast(t('sessionLogged'));
     const re=document.getElementById('detail-ring-anchor');
     if(re&&window.triggerRipple){const rc=re.getBoundingClientRect();window.triggerRipple(rc.left+rc.width/2,rc.top+rc.height/2);}
     setTimeout(()=>playSegmentAnim(currentSkillId,oldMins,oldMins+dur),350);
@@ -819,7 +845,7 @@ function confirmManualLog(){
     const mins=Math.round(hrs*60);
     sk.sessions.push({id:Date.now(),duration:mins,date:null,note:'',milestone:'',ts:Date.now(),undoc:true});
     sd(data);closeOverlay('overlay-manual');renderHome();
-    showToast(`${hrs}h added`);
+    showToast(`${hrs}${t('hoursAdded')}`);
     const re2=document.getElementById('detail-ring-anchor');
     if(re2&&window.triggerRipple){const rc=re2.getBoundingClientRect();window.triggerRipple(rc.left+rc.width/2,rc.top+rc.height/2);}
     setTimeout(()=>playSegmentAnim(currentSkillId,oldMins,oldMins+mins),350);
@@ -1081,9 +1107,9 @@ function buildHeatmap(sk){
   cellsHtml+='</div>';
 
   // legend
-  const legendHtml=`<div class="heatmap-legend"><span>less</span><div class="heatmap-cell" style="display:inline-block"></div><div class="heatmap-cell l1" style="display:inline-block"></div><div class="heatmap-cell l2" style="display:inline-block"></div><div class="heatmap-cell l3" style="display:inline-block"></div><div class="heatmap-cell l4" style="display:inline-block"></div><span>more</span></div>`;
+  const legendHtml=`<div class="heatmap-legend"><span>${t('less')}</span><div class="heatmap-cell" style="display:inline-block"></div><div class="heatmap-cell l1" style="display:inline-block"></div><div class="heatmap-cell l2" style="display:inline-block"></div><div class="heatmap-cell l3" style="display:inline-block"></div><div class="heatmap-cell l4" style="display:inline-block"></div><span>${t('more')}</span></div>`;
 
-  return `<div class="heatmap-wrap glass-card"><div class="heatmap-title">Activity — last 90 days</div>${monthHtml}${cellsHtml}${legendHtml}</div>`;
+  return `<div class="heatmap-wrap glass-card"><div class="heatmap-title">${t('activity')}</div>${monthHtml}${cellsHtml}${legendHtml}</div>`;
 }
 
 // ── TIMELINE (journal: milestones + session notes + auto hour markers) ──
@@ -1128,8 +1154,8 @@ function buildTimeline(sk){
 
   let html=`<div class="timeline-wrap">
     <div class="timeline-title" style="display:flex;align-items:center;justify-content:space-between">
-      <span>Timeline</span>
-      <button class="tl-add-btn" style="margin:0" onclick="openMilestoneLog('${sk.id}')">+ Log milestone</button>
+      <span>${t('timeline')}</span>
+      <button class="tl-add-btn" style="margin:0" onclick="openMilestoneLog('${sk.id}')">${t('addMilestone')}</button>
     </div>`;
 
   if(!entries.length){
@@ -1190,7 +1216,7 @@ function renderAspirations(sk){
   const aspirations=sk.aspirations||[];
   list.innerHTML='';
   if(!aspirations.length){
-    list.innerHTML=`<div style="padding:8px 20px 12px;font-size:13px;color:var(--text3)">No aspirations yet. Add things you want to achieve.</div>`;
+    list.innerHTML=`<div style="padding:8px 20px 12px;font-size:13px;color:var(--text3)">${t('noAspirations')}</div>`;
     return;
   }
   aspirations.forEach((a,i)=>{
@@ -1489,7 +1515,230 @@ function playSegmentAnim(skillId, oldMins, newMins){
   }));
 }
 
-// ══ OVERLAY ══
+// ══ i18n ══
+const STRINGS={
+  en:{
+    settings:'Settings',
+    language:'Language',
+    appearance:'Appearance',
+    toggleTheme:'Toggle theme',
+    credit:'Developed by Jinnie',
+    skills:'Skills',
+    library:'Library',
+    stats:'Stats',
+    nothingYet:'Nothing here yet',
+    nothingYetSub:'Go to Library to add your first skill.',
+    sessions:'Sessions',
+    aspirations:'Aspirations',
+    noAspirations:'No aspirations yet. Add things you want to achieve.',
+    noSessions:'No sessions yet. Hit Start or log manually.',
+    timer:'Session timer',
+    start:'▶ Start',
+    stop:'■ Stop',
+    manual:'+ Manual',
+    archive:'Archive',
+    unarchive:'Unarchive',
+    goal:'Goal',
+    logHours:'Log hours',
+    documented:'Documented session',
+    undocumented:'Undocumented hours',
+    save:'Save',
+    cancel:'Cancel',
+    add:'+ Add',
+    createSkill:'Create skill',
+    addSkill:'Add to my skills',
+    renameSkill:'Rename skill',
+    editGoal:'Edit goal',
+    addAspiration:'Add aspiration',
+    editAspiration:'Edit aspiration',
+    markAchieved:'✦ Mark as achieved',
+    deleteEntry:'Delete entry',
+    logMilestone:'Log milestone',
+    addMilestone:'+ Log milestone',
+    archivedSkills:'Archived skills',
+    restore:'Restore',
+    noArchived:'No archived skills.',
+    sessionUpdated:'Updated',
+    deleted:'Deleted',
+    goalUpdated:'Goal updated',
+    renamed:'Skill renamed',
+    aspirationAdded:'Aspiration added',
+    milestoneLogged:'✦ Milestone logged!',
+    hoursAdded:'h added',
+    sessionLogged:'Session logged',
+    sessionSaved:'Session saved',
+    timeline:'Timeline',
+    activity:'Activity — last 90 days',
+    less:'less',
+    more:'more',
+    hours:'Hours',
+    progress:'Progress',
+    avgMin:'Avg min',
+    upcoming:'upcoming',
+    undocHours:'Hours logged without sessions',
+    undocEdit:'Edit undocumented hours',
+    totalUndoc:'Total undocumented hours',
+    whatAchieve:'What did you achieve?',
+    dateAchieved:'Date achieved',
+    whatWant:'What do you want to achieve?',
+    skillName:'Skill name',
+    emoji:'Emoji',
+    goalHours:'Goal (hours)',
+    durationMin:'Duration (minutes)',
+    date:'Date (optional)',
+    note:'Note (optional)',
+    milestoneQ:'Milestone reached? (optional)',
+    hoursToAdd:'Hours to add',
+    name:'Name',
+    noData:'No data yet',
+    noDataSub:'Add a skill and start logging.',
+    hoursReached:'hours reached',
+    enterDuration:'Enter a valid duration',
+    enterHours:'Enter valid hours',
+    fillFields:'Fill all fields',
+    pickDate:'Pick a date',
+  },
+  zh:{
+    settings:'设置',
+    language:'语言',
+    appearance:'外观',
+    toggleTheme:'切换主题',
+    credit:'开发者：Jinnie',
+    skills:'技能',
+    library:'库',
+    stats:'统计',
+    nothingYet:'还没有技能',
+    nothingYetSub:'前往库页面添加你的第一个技能。',
+    sessions:'练习记录',
+    aspirations:'目标清单',
+    noAspirations:'还没有目标。添加你想达成的事情。',
+    noSessions:'还没有记录。点击开始或手动添加。',
+    timer:'计时器',
+    start:'▶ 开始',
+    stop:'■ 停止',
+    manual:'+ 手动记录',
+    archive:'归档',
+    unarchive:'取消归档',
+    goal:'目标',
+    logHours:'记录时间',
+    documented:'有记录的练习',
+    undocumented:'未记录的时间',
+    save:'保存',
+    cancel:'取消',
+    add:'+ 添加',
+    createSkill:'创建技能',
+    addSkill:'添加到我的技能',
+    renameSkill:'重命名技能',
+    editGoal:'编辑目标',
+    addAspiration:'添加目标',
+    editAspiration:'编辑目标',
+    markAchieved:'✦ 标记为已达成',
+    deleteEntry:'删除',
+    logMilestone:'记录里程碑',
+    addMilestone:'+ 记录里程碑',
+    archivedSkills:'已归档技能',
+    restore:'恢复',
+    noArchived:'没有已归档的技能。',
+    sessionUpdated:'已更新',
+    deleted:'已删除',
+    goalUpdated:'目标已更新',
+    renamed:'技能已重命名',
+    aspirationAdded:'目标已添加',
+    milestoneLogged:'✦ 里程碑已记录！',
+    hoursAdded:'小时已添加',
+    sessionLogged:'练习已记录',
+    sessionSaved:'练习已保存',
+    timeline:'时间线',
+    activity:'活动记录 — 最近90天',
+    less:'少',
+    more:'多',
+    hours:'小时',
+    progress:'进度',
+    avgMin:'平均时长(分)',
+    upcoming:'待达成',
+    undocHours:'未记录的时间',
+    undocEdit:'编辑未记录时间',
+    totalUndoc:'未记录总时长（小时）',
+    whatAchieve:'你达成了什么？',
+    dateAchieved:'达成日期',
+    whatWant:'你想达成什么？',
+    skillName:'技能名称',
+    emoji:'图标',
+    goalHours:'目标（小时）',
+    durationMin:'时长（分钟）',
+    date:'日期（可选）',
+    note:'备注（可选）',
+    milestoneQ:'达成了里程碑？（可选）',
+    hoursToAdd:'添加小时数',
+    name:'名称',
+    noData:'暂无数据',
+    noDataSub:'添加技能并开始记录。',
+    hoursReached:'小时达成',
+    enterDuration:'请输入有效时长',
+    enterHours:'请输入有效小时数',
+    fillFields:'请填写所有字段',
+    pickDate:'请选择日期',
+  }
+};
+
+let currentLang=localStorage.getItem('hundred_lang')||'en';
+function t(key){return (STRINGS[currentLang]||STRINGS.en)[key]||STRINGS.en[key]||key;}
+
+function setLang(lang){
+  currentLang=lang;
+  localStorage.setItem('hundred_lang',lang);
+  applyLang();
+  closeOverlay('overlay-settings');
+  updateSettingsUI();
+}
+
+function applyLang(){
+  // nav
+  const navBtns=document.querySelectorAll('.nav-btn');
+  if(navBtns[0])navBtns[0].childNodes[navBtns[0].childNodes.length-1].textContent=t('skills');
+  if(navBtns[1])navBtns[1].childNodes[navBtns[1].childNodes.length-1].textContent=t('library');
+  if(navBtns[2])navBtns[2].childNodes[navBtns[2].childNodes.length-1].textContent=t('stats');
+  // home empty
+  const eh=document.getElementById('empty-home');
+  if(eh){const h3=eh.querySelector('h3');const p=eh.querySelector('p');if(h3)h3.textContent=t('nothingYet');if(p)p.textContent=t('nothingYetSub');}
+  // settings sheet
+  document.getElementById('s-title').textContent=t('settings');
+  document.getElementById('s-lang-label').textContent=t('language');
+  document.getElementById('s-theme-label').textContent=t('appearance');
+  document.getElementById('s-theme-btn').textContent=t('toggleTheme');
+  document.getElementById('s-credit').textContent=t('credit');
+  // re-render current screen
+  const screens=['home','detail','library','stats'];
+  screens.forEach(s=>{
+    if(document.getElementById('screen-'+s)?.classList.contains('active')){
+      if(s==='home')renderHome();
+      if(s==='library')renderLibrary();
+      if(s==='stats')renderStats();
+      if(s==='detail'&&currentSkillId){
+        const data=ld();const sk=data.skills.find(s=>s.id===currentSkillId);
+        if(sk)renderDetail(sk);
+      }
+    }
+  });
+}
+
+function openSettings(){
+  updateSettingsUI();
+  openOverlay('overlay-settings');
+}
+
+function updateSettingsUI(){
+  document.getElementById('lang-en-btn').className='btn btn-sm '+(currentLang==='en'?'btn-primary':'btn-outline');
+  document.getElementById('lang-zh-btn').className='btn btn-sm '+(currentLang==='zh'?'btn-primary':'btn-outline');
+  document.getElementById('s-title').textContent=t('settings');
+  document.getElementById('s-lang-label').textContent=t('language');
+  document.getElementById('s-theme-label').textContent=t('appearance');
+  document.getElementById('s-theme-btn').textContent=t('toggleTheme');
+  document.getElementById('s-credit').textContent=t('credit');
+}
+
+// apply lang on init
+
 const openOverlay=id=>document.getElementById(id).classList.add('open');
 const closeOverlay=id=>document.getElementById(id).classList.remove('open');
 document.querySelectorAll('.overlay').forEach(ov=>{
@@ -1505,6 +1754,7 @@ function showToast(msg){
 }
 
 renderHome();
+applyLang();
 
 // prevent pinch zoom — iOS Safari ignores the meta tag
 document.addEventListener('touchmove',function(e){if(e.touches.length>1)e.preventDefault();},{passive:false});
@@ -1561,7 +1811,7 @@ document.addEventListener('gesturestart',function(e){e.preventDefault();},{passi
     const pal=getPal();
     const a=pal[pt.ci%pal.length];
     const b=pal[(pt.ci+1)%pal.length];
-    const f=(Math.sin(t*0.0008+pt.ci*1.4)+1)/2;
+    const f=(Math.sin(t*0.004+pt.ci*1.4)+1)/2;
     return [lerp(a[0],b[0],f),lerp(a[1],b[1],f),lerp(a[2],b[2],f)];
   }
 
