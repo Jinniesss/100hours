@@ -575,8 +575,11 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
     </div>
     <div style="height:1px;background:var(--border);margin:4px 0 16px"></div>
     <div style="text-align:center;font-size:12px;color:var(--text3);line-height:1.8">
-      <div id="s-credit">Developed by Jinnie</div>
-      <div style="margin-top:2px;font-size:11px;opacity:.6">hour · 100</div>
+      <div id="s-credit">Developed by Jinnie and Claude</div>
+      <div style="margin-top:4px;opacity:.5">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="currentColor" opacity=".4"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-6h2v2h-2zm0-8h2v6h-2z" fill="currentColor" opacity=".15"/></svg>
+        <svg width="14" height="14" viewBox="0 0 32 32" fill="none" style="vertical-align:middle;margin-left:2px" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M16 2L20.5 12.5L31 16L20.5 19.5L16 30L11.5 19.5L1 16L11.5 12.5L16 2Z" fill="currentColor" opacity=".5"/></svg>
+      </div>
     </div>
   </div>
 </div>
@@ -1036,10 +1039,10 @@ function buildStatSlide(sk){
     ${buildHeatmap(sk)}
     ${buildTimeline(sk)}
     <div class="glass-card stat-nums">
-      <div class="stat-num-item"><div class="stat-num-val">${totalHrs}</div><div class="stat-num-lbl">Hours</div></div>
-      <div class="stat-num-item"><div class="stat-num-val">${docs.length}</div><div class="stat-num-lbl">Sessions</div></div>
-      <div class="stat-num-item"><div class="stat-num-val">${avg}</div><div class="stat-num-lbl">Avg min</div></div>
-      <div class="stat-num-item"><div class="stat-num-val">${pct}%</div><div class="stat-num-lbl">Progress</div></div>
+      <div class="stat-num-item"><div class="stat-num-val">${totalHrs}</div><div class="stat-num-lbl">${t('hours')}</div></div>
+      <div class="stat-num-item"><div class="stat-num-val">${docs.length}</div><div class="stat-num-lbl">${t('sessions')}</div></div>
+      <div class="stat-num-item"><div class="stat-num-val">${avg}</div><div class="stat-num-lbl">${t('avgMin')}</div></div>
+      <div class="stat-num-item"><div class="stat-num-val">${pct}%</div><div class="stat-num-lbl">${t('progress')}</div></div>
     </div>`;
 }
 
@@ -1522,7 +1525,7 @@ const STRINGS={
     language:'Language',
     appearance:'Appearance',
     toggleTheme:'Toggle theme',
-    credit:'Developed by Jinnie',
+    credit:'Developed by Jinnie and Claude',
     skills:'Skills',
     library:'Library',
     stats:'Stats',
@@ -1603,7 +1606,7 @@ const STRINGS={
     language:'语言',
     appearance:'外观',
     toggleTheme:'切换主题',
-    credit:'开发者：Jinnie',
+    credit:'由 Jinnie 和 Claude 开发',
     skills:'技能',
     library:'库',
     stats:'统计',
