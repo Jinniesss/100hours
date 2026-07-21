@@ -574,6 +574,17 @@ body{font-family:var(--sans);font-size:15px;min-height:100dvh;overflow-x:hidden;
         <button class="btn btn-outline btn-sm" onclick="toggleTheme();updateSettingsUI()" style="flex:1" id="s-theme-btn">Toggle theme</button>
       </div>
     </div>
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;color:var(--text2);font-weight:500;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em" id="s-backup-label">Backup</div>
+      <div class="field" style="margin-bottom:10px">
+        <input id="gh-token" type="password" placeholder="GitHub token" autocomplete="off">
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-outline btn-sm" style="flex:1" id="s-backup-btn" onclick="backupData()">Back up</button>
+        <button class="btn btn-outline btn-sm" style="flex:1" id="s-restore-btn" onclick="restoreData()">Restore</button>
+      </div>
+      <div id="s-backup-status" style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center"></div>
+    </div>
     <div style="height:1px;background:var(--border);margin:4px 0 16px"></div>
     <div style="text-align:center;font-size:12px;color:var(--text3);line-height:1.8">
       <div id="s-credit">Developed by Jinnie and Claude</div>
@@ -1527,6 +1538,20 @@ const STRINGS={
     appearance:'Appearance',
     toggleTheme:'Toggle theme',
     credit:'Developed by Jinnie and Claude',
+    backupLabel:'Backup',
+    backupBtn:'Back up',
+    restoreBtn:'Restore',
+    tokenPh:'GitHub token',
+    tokenSaved:'Token saved on this device',
+    tokenNeeded:'Paste your GitHub token first',
+    backupWorking:'Backing up…',
+    backupDone:'Backed up to GitHub ✓',
+    backupFail:'Backup failed — check token',
+    restoreWorking:'Restoring…',
+    restoreNone:'No backup found on GitHub',
+    restoreConfirm:'Replace all data on this device with the GitHub backup?',
+    restoreDone:'Restored ✓',
+    restoreFail:'Restore failed — check token',
     skills:'Skills',
     library:'Library',
     stats:'Stats',
@@ -1608,6 +1633,20 @@ const STRINGS={
     appearance:'外观',
     toggleTheme:'切换主题',
     credit:'由 Jinnie 和 Claude 开发',
+    backupLabel:'备份',
+    backupBtn:'备份',
+    restoreBtn:'恢复',
+    tokenPh:'GitHub 令牌',
+    tokenSaved:'令牌已保存在本设备',
+    tokenNeeded:'请先粘贴 GitHub 令牌',
+    backupWorking:'备份中…',
+    backupDone:'已备份到 GitHub ✓',
+    backupFail:'备份失败 — 请检查令牌',
+    restoreWorking:'恢复中…',
+    restoreNone:'GitHub 上没有找到备份',
+    restoreConfirm:'用 GitHub 备份替换本设备上的全部数据？',
+    restoreDone:'已恢复 ✓',
+    restoreFail:'恢复失败 — 请检查令牌',
     skills:'技能',
     library:'库',
     stats:'统计',
@@ -1739,6 +1778,65 @@ function updateSettingsUI(){
   document.getElementById('s-theme-label').textContent=t('appearance');
   document.getElementById('s-theme-btn').textContent=t('toggleTheme');
   document.getElementById('s-credit').textContent=t('credit');
+  document.getElementById('s-backup-label').textContent=t('backupLabel');
+  document.getElementById('s-backup-btn').textContent=t('backupBtn');
+  document.getElementById('s-restore-btn').textContent=t('restoreBtn');
+  document.getElementById('gh-token').placeholder=t('tokenPh');
+  document.getElementById('s-backup-status').textContent=ghToken()?t('tokenSaved'):'';
+}
+
+// ══ GITHUB BACKUP / RESTORE ══
+const GH_REPO='jinniesss/100hours', GH_FILE='data.json';
+const ghToken=()=>localStorage.getItem('hundred_gh_token')||'';
+function ghSaveTokenFromField(){
+  const el=document.getElementById('gh-token');
+  const v=el.value.trim();
+  if(v){localStorage.setItem('hundred_gh_token',v);el.value='';}
+  return ghToken();
+}
+function ghReq(method,body){
+  return fetch('https://api.github.com/repos/'+GH_REPO+'/contents/'+GH_FILE,{
+    method,
+    headers:{'Authorization':'token '+ghToken(),'Accept':'application/vnd.github+json','Content-Type':'application/json'},
+    body:body?JSON.stringify(body):undefined
+  });
+}
+const b64enc=s=>btoa(String.fromCharCode(...new TextEncoder().encode(s)));
+const b64dec=s=>new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\n/g,'')),c=>c.charCodeAt(0)));
+async function backupData(){
+  if(!ghSaveTokenFromField()){showToast(t('tokenNeeded'));return;}
+  const st=document.getElementById('s-backup-status');
+  st.textContent=t('backupWorking');
+  try{
+    let sha=null;
+    const g=await ghReq('GET');
+    if(g.ok)sha=(await g.json()).sha;
+    const snapshot={savedAt:new Date().toISOString(),data:ld(),theme:localStorage.getItem('hundred_theme')||'light',lang:currentLang};
+    const payload={message:'Backup app data',content:b64enc(JSON.stringify(snapshot,null,2)),author:{name:'Claude',email:'claude@anthropic.com'}};
+    if(sha)payload.sha=sha;
+    const p=await ghReq('PUT',payload);
+    if(!p.ok)throw 0;
+    st.textContent='';showToast(t('backupDone'));updateSettingsUI();
+  }catch(e){st.textContent='';showToast(t('backupFail'));}
+}
+async function restoreData(){
+  if(!ghSaveTokenFromField()){showToast(t('tokenNeeded'));return;}
+  const st=document.getElementById('s-backup-status');
+  st.textContent=t('restoreWorking');
+  try{
+    const g=await ghReq('GET');
+    if(g.status===404){st.textContent='';showToast(t('restoreNone'));return;}
+    if(!g.ok)throw 0;
+    const snapshot=JSON.parse(b64dec((await g.json()).content));
+    if(!snapshot||!snapshot.data){st.textContent='';showToast(t('restoreNone'));return;}
+    st.textContent='';
+    if(!confirm(t('restoreConfirm')))return;
+    sd(snapshot.data);
+    if(snapshot.theme)localStorage.setItem('hundred_theme',snapshot.theme);
+    if(snapshot.lang)localStorage.setItem('hundred_lang',snapshot.lang);
+    showToast(t('restoreDone'));
+    setTimeout(()=>location.reload(),700);
+  }catch(e){st.textContent='';showToast(t('restoreFail'));}
 }
 
 // apply lang on init
